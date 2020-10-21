@@ -1,3 +1,9 @@
+<p align="center">
+<img src="https://raw.githubusercontent.com/2LStudios-MC/HamsterAPI/main/docs/logo.png?token=AKWYIEBFNWCVUX7SOORJPD27R6OKI">
+</p>
+
+<h1 align="center">Documentation</h1>
+
 ### Get started
 The first step is to get the HamsterAPI instance to access most of the methods of the API with the static method:
 ```java
