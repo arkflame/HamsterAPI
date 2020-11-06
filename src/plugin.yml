@@ -1,0 +1,4 @@
+name: HamsterAPI
+version: 0.1.3
+authors: [Sammwy, LinsaFTW]
+main: dev._2lstudios.hamsterapi.HamsterAPI
