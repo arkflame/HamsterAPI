@@ -1,7 +1,7 @@
 package dev._2lstudios.hamsterapi.hamsterplayer;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import org.bukkit.Server;
@@ -12,57 +12,40 @@ import dev._2lstudios.hamsterapi.utils.Reflection;
 import io.netty.channel.Channel;
 
 public class HamsterPlayer {
-	private final Class<?> iChatBaseComponentClass;
-	private Method toChatBaseComponent, sendPacketMethod;
 	private final Player player;
 	private final HamsterAPI hamsterAPI;
-	private Object playerConnection, networkManager;
-	private Channel channel = null;
+	private Object playerConnection;
+	private Object networkManager;
+	private Channel channel;
+	private Class<?> iChatBaseComponentClass;
+	private Method toChatBaseComponent;
+	private Method sendPacketMethod;
+	private boolean setup = false;
+
+	public void setup()
+			throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, NoSuchFieldException {
+		if (setup) {
+			return;
+		}
+
+		final Reflection reflection = hamsterAPI.getReflection();
+		final Object handler = player.getClass().getDeclaredMethod("getHandle").invoke(player);
+
+		this.playerConnection = reflection.getField(handler, "playerConnection");
+		this.networkManager = reflection.getField(playerConnection, "networkManager");
+		this.channel = (Channel) reflection.getField(networkManager, "channel");
+		this.iChatBaseComponentClass = reflection.getNMSClass("IChatBaseComponent");
+		this.sendPacketMethod = this.playerConnection.getClass().getDeclaredMethod("sendPacket",
+				reflection.getNMSClass("Packet"));
+		this.toChatBaseComponent = iChatBaseComponentClass.getDeclaredClasses()[0].getDeclaredMethod("a", String.class);
+		hamsterAPI.getLogger().info("Succesfully setup player " + player.getName() + "!");
+
+		setup = true;
+	}
 
 	HamsterPlayer(final Player player) {
 		this.player = player;
 		this.hamsterAPI = HamsterAPI.getInstance();
-
-		final Reflection reflection = hamsterAPI.getReflection();
-
-		try {
-			final Object handler = player.getClass().getDeclaredMethod("getHandle").invoke(player);
-			final Field playerConnectionField = handler.getClass().getDeclaredField("playerConnection");
-
-			playerConnectionField.setAccessible(true);
-
-			this.playerConnection = playerConnectionField.get(handler);
-
-			playerConnectionField.setAccessible(false);
-
-			final Field networkManagerField = playerConnection.getClass().getDeclaredField("networkManager");
-
-			networkManagerField.setAccessible(true);
-
-			this.networkManager = networkManagerField.get(playerConnection);
-
-			networkManagerField.setAccessible(false);
-
-			final Field channelField = networkManager.getClass().getDeclaredField("channel");
-
-			channelField.setAccessible(true);
-
-			this.channel = (Channel) channelField.get(networkManager);
-
-			channelField.setAccessible(false);
-		} catch (final Exception exception) {
-			exception.printStackTrace();
-		}
-
-		this.iChatBaseComponentClass = reflection.getNMSClass("IChatBaseComponent");
-
-		try {
-			this.sendPacketMethod = this.playerConnection.getClass().getDeclaredMethod("sendPacket",
-					reflection.getNMSClass("Packet"));
-			this.toChatBaseComponent = iChatBaseComponentClass.getDeclaredClasses()[0].getDeclaredMethod("a",
-					String.class);
-		} catch (final Exception exception) {
-		}
 	}
 
 	public Player getPlayer() {
@@ -119,8 +102,8 @@ public class HamsterPlayer {
 	}
 
 	public void closeChannel() {
-		if (this.channel != null && this.channel.isActive()) {
-			this.channel.close();
+		if (channel != null && channel.isActive()) {
+			channel.close();
 		}
 	}
 
@@ -158,14 +141,14 @@ public class HamsterPlayer {
 	}
 
 	public Object getPlayerConnection() {
-		return this.playerConnection;
+		return playerConnection;
 	}
 
 	public Object getNetworkManager() {
-		return this.networkManager;
+		return networkManager;
 	}
 
 	public Channel getChannel() {
-		return this.channel;
+		return channel;
 	}
 }

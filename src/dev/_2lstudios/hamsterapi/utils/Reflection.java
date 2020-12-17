@@ -1,5 +1,6 @@
 package dev._2lstudios.hamsterapi.utils;
 
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,6 +10,23 @@ public class Reflection {
 
 	public Reflection(String version) {
 		this.version = version;
+	}
+
+	public Object getField(final Object object, final String fieldName)
+			throws NoSuchFieldException, IllegalAccessException {
+		if (object == null) {
+			throw new IllegalAccessException("Tried to access field from a null object");
+		}
+
+		final Object fieldValue;
+		final Field field = object.getClass().getField(fieldName);
+		final boolean accessible = field.isAccessible();
+
+		field.setAccessible(true);
+		fieldValue = field.get(object);
+		field.setAccessible(accessible);
+
+		return fieldValue;
 	}
 
 	public Class<?> getNMSClass(String key) {
