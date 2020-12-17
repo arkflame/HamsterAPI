@@ -74,7 +74,7 @@ public class HamsterAPI extends JavaPlugin {
 
 		server.getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
 		pluginManager.registerEvents(new PlayerJoinListener(packetInjectorQueue), this);
-		pluginManager.registerEvents(new PlayerQuitListener(hamsterPlayerManager, packetInjector), this);
+		pluginManager.registerEvents(new PlayerQuitListener(hamsterPlayerManager), this);
 
 		for (final Player player : server.getOnlinePlayers()) {
 			packetInjectorQueue.queue(hamsterPlayerManager.get(player));
