@@ -17,8 +17,8 @@ public class HamsterDecoderHandler extends ByteToMessageDecoder {
 	private final PluginManager pluginManager;
 	private final HamsterPlayer hamsterPlayer;
 
-	public HamsterDecoderHandler(final Server server, final HamsterPlayer hamsterPlayer) {
-		this.server = server;
+	public HamsterDecoderHandler(final HamsterPlayer hamsterPlayer) {
+		this.server = hamsterPlayer.getPlayer().getServer();
 		this.pluginManager = server.getPluginManager();
 		this.hamsterPlayer = hamsterPlayer;
 	}

@@ -3,13 +3,21 @@ package dev._2lstudios.hamsterapi.hamsterplayer;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.channels.ClosedChannelException;
+import java.util.logging.Logger;
 
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
 
 import dev._2lstudios.hamsterapi.HamsterAPI;
+import dev._2lstudios.hamsterapi.handlers.HamsterChannelHandler;
+import dev._2lstudios.hamsterapi.handlers.HamsterDecoderHandler;
+import dev._2lstudios.hamsterapi.enums.HamsterHandler;
 import dev._2lstudios.hamsterapi.utils.Reflection;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelDuplexHandler;
+import io.netty.channel.ChannelPipeline;
+import io.netty.handler.codec.ByteToMessageDecoder;
 
 public class HamsterPlayer {
 	private final Player player;
@@ -21,27 +29,7 @@ public class HamsterPlayer {
 	private Method toChatBaseComponent;
 	private Method sendPacketMethod;
 	private boolean setup = false;
-
-	public void setup()
-			throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, NoSuchFieldException {
-		if (setup) {
-			return;
-		}
-
-		final Reflection reflection = hamsterAPI.getReflection();
-		final Object handler = player.getClass().getDeclaredMethod("getHandle").invoke(player);
-
-		this.playerConnection = reflection.getField(handler, "playerConnection");
-		this.networkManager = reflection.getField(playerConnection, "networkManager");
-		this.channel = (Channel) reflection.getField(networkManager, "channel");
-		this.iChatBaseComponentClass = reflection.getNMSClass("IChatBaseComponent");
-		this.sendPacketMethod = this.playerConnection.getClass().getDeclaredMethod("sendPacket",
-				reflection.getNMSClass("Packet"));
-		this.toChatBaseComponent = iChatBaseComponentClass.getDeclaredClasses()[0].getDeclaredMethod("a", String.class);
-		hamsterAPI.getLogger().info("Succesfully setup player " + player.getName() + "!");
-
-		setup = true;
-	}
+	private boolean injected = false;
 
 	HamsterPlayer(final Player player) {
 		this.player = player;
@@ -150,5 +138,102 @@ public class HamsterPlayer {
 
 	public Channel getChannel() {
 		return channel;
+	}
+
+	public void uninject() {
+		if (injected && channel != null && channel.isActive()) {
+			final ChannelPipeline pipeline = channel.pipeline();
+
+			if (pipeline.get(HamsterHandler.HAMSTER_DECODER) != null) {
+				pipeline.remove(HamsterHandler.HAMSTER_DECODER);
+			}
+
+			if (pipeline.get(HamsterHandler.HAMSTER_CHANNEL) != null) {
+				pipeline.remove(HamsterHandler.HAMSTER_CHANNEL);
+			}
+		}
+	}
+
+	public void setup()
+			throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, NoSuchFieldException {
+		if (!setup) {
+			final Reflection reflection = hamsterAPI.getReflection();
+			final Object handler = player.getClass().getDeclaredMethod("getHandle").invoke(player);
+
+			this.playerConnection = reflection.getField(handler, "playerConnection");
+			this.networkManager = reflection.getField(playerConnection, "networkManager");
+			this.channel = (Channel) reflection.getField(networkManager, "channel");
+			this.iChatBaseComponentClass = reflection.getNMSClass("IChatBaseComponent");
+			this.sendPacketMethod = this.playerConnection.getClass().getDeclaredMethod("sendPacket",
+					reflection.getNMSClass("Packet"));
+			this.toChatBaseComponent = iChatBaseComponentClass.getDeclaredClasses()[0].getDeclaredMethod("a",
+					String.class);
+			this.setup = true;
+
+			hamsterAPI.getLogger().info("Succesfully setup player " + player.getName() + "!");
+		}
+	}
+
+	public void inject() throws IllegalAccessException, InvocationTargetException, NoSuchMethodException,
+			NoSuchFieldException, ClosedChannelException {
+		if (!injected) {
+			setup();
+
+			if (!channel.isActive()) {
+				throw new ClosedChannelException();
+			}
+
+			final ChannelPipeline pipeline = channel.pipeline();
+			final ByteToMessageDecoder hamsterDecoderHandler = new HamsterDecoderHandler(this);
+			final ChannelDuplexHandler hamsterChannelHandler = new HamsterChannelHandler(this);
+
+			if (pipeline.get("decompress") != null) {
+				pipeline.addAfter("decompress", HamsterHandler.HAMSTER_DECODER, hamsterDecoderHandler);
+			} else if (pipeline.get("splitter") != null) {
+				pipeline.addAfter("splitter", HamsterHandler.HAMSTER_DECODER, hamsterDecoderHandler);
+			} else {
+				throw new IllegalAccessException(
+						"No ChannelHandler was found on the pipeline to inject " + HamsterHandler.HAMSTER_DECODER);
+			}
+
+			if (pipeline.get("decoder") != null) {
+				pipeline.addAfter("decoder", HamsterHandler.HAMSTER_CHANNEL, hamsterChannelHandler);
+			} else {
+				throw new IllegalAccessException(
+						"No ChannelHandler was found on the pipeline to inject " + hamsterChannelHandler);
+			}
+
+			this.injected = true;
+		}
+	}
+
+	public boolean trySetup(final Logger logger) {
+		try {
+			setup();
+		} catch (final IllegalAccessException | InvocationTargetException | NoSuchMethodException
+				| NoSuchFieldException e) {
+			logger.info("Failed to setup " + player.getName() + "! Reason: " + e.getMessage());
+
+			return false;
+		}
+
+		return true;
+	}
+
+	public boolean tryInject(final Logger logger) {
+		try {
+			inject();
+		} catch (final IllegalAccessException | InvocationTargetException | NoSuchMethodException | NoSuchFieldException
+				| ClosedChannelException e) {
+			logger.info("Failed to inject " + player.getName() + "! Reason: " + e.getMessage());
+
+			return false;
+		}
+
+		return true;
+	}
+
+	public boolean trySetupInject(final Logger logger) {
+		return trySetup(logger) && tryInject(logger);
 	}
 }

@@ -16,8 +16,8 @@ public class HamsterChannelHandler extends ChannelDuplexHandler {
 	private final PluginManager pluginManager;
 	private final HamsterPlayer hamsterPlayer;
 
-	public HamsterChannelHandler(final Server server, final HamsterPlayer hamsterPlayer) {
-		this.server = server;
+	public HamsterChannelHandler(final HamsterPlayer hamsterPlayer) {
+		this.server = hamsterPlayer.getPlayer().getServer();
 		this.pluginManager = server.getPluginManager();
 		this.hamsterPlayer = hamsterPlayer;
 	}

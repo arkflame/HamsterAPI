@@ -13,11 +13,10 @@ import org.bukkit.plugin.java.JavaPlugin;
 import dev._2lstudios.hamsterapi.hamsterplayer.HamsterPlayer;
 import dev._2lstudios.hamsterapi.hamsterplayer.HamsterPlayerManager;
 import dev._2lstudios.hamsterapi.listeners.PlayerJoinListener;
+import dev._2lstudios.hamsterapi.listeners.PlayerLoginListener;
 import dev._2lstudios.hamsterapi.listeners.PlayerQuitListener;
 import dev._2lstudios.hamsterapi.messengers.BungeeMessenger;
-import dev._2lstudios.hamsterapi.tasks.PacketInjectorQueue;
 import dev._2lstudios.hamsterapi.utils.BufferIO;
-import dev._2lstudios.hamsterapi.utils.PacketInjector;
 import dev._2lstudios.hamsterapi.utils.Reflection;
 
 public class HamsterAPI extends JavaPlugin {
@@ -26,7 +25,6 @@ public class HamsterAPI extends JavaPlugin {
 	private BufferIO bufferIO;
 	private BungeeMessenger bungeeMessenger;
 	private HamsterPlayerManager hamsterPlayerManager;
-	private PacketInjector packetInjector;
 
 	private static synchronized void setInstance(final HamsterAPI hamsterAPI) {
 		HamsterAPI.instance = hamsterAPI;
@@ -47,7 +45,6 @@ public class HamsterAPI extends JavaPlugin {
 		this.reflection = new Reflection(server.getClass().getPackage().getName().split("\\.")[3]);
 		this.bufferIO = new BufferIO(this.reflection, bukkitVersion, compressionThreshold);
 		this.hamsterPlayerManager = new HamsterPlayerManager();
-		this.packetInjector = new PacketInjector(server);
 		this.bungeeMessenger = new BungeeMessenger(this);
 	}
 
@@ -68,19 +65,19 @@ public class HamsterAPI extends JavaPlugin {
 	public void onEnable() {
 		final Server server = getServer();
 		final PluginManager pluginManager = server.getPluginManager();
-		final PacketInjectorQueue packetInjectorQueue = new PacketInjectorQueue(this);
 
 		initialize();
 
 		server.getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
-		pluginManager.registerEvents(new PlayerJoinListener(packetInjectorQueue), this);
+		pluginManager.registerEvents(new PlayerJoinListener(this), this);
+		pluginManager.registerEvents(new PlayerLoginListener(this), this);
 		pluginManager.registerEvents(new PlayerQuitListener(hamsterPlayerManager), this);
 
 		for (final Player player : server.getOnlinePlayers()) {
-			packetInjectorQueue.queue(hamsterPlayerManager.get(player));
-		}
+			final HamsterPlayer hamsterPlayer = this.hamsterPlayerManager.get(player);
 
-		server.getScheduler().runTaskTimer(this, packetInjectorQueue, 20, 20);
+			hamsterPlayer.trySetupInject(getLogger());
+		}
 	}
 
 	@Override
@@ -92,7 +89,8 @@ public class HamsterAPI extends JavaPlugin {
 		for (final Player player : server.getOnlinePlayers()) {
 			final HamsterPlayer hamsterPlayer = this.hamsterPlayerManager.get(player);
 
-			this.packetInjector.uninject(hamsterPlayer);
+			hamsterPlayer.uninject();
+
 			this.hamsterPlayerManager.remove(player);
 		}
 	}
@@ -107,10 +105,6 @@ public class HamsterAPI extends JavaPlugin {
 
 	public HamsterPlayerManager getHamsterPlayerManager() {
 		return this.hamsterPlayerManager;
-	}
-
-	public PacketInjector getPacketInjector() {
-		return this.packetInjector;
 	}
 
 	public Reflection getReflection() {
