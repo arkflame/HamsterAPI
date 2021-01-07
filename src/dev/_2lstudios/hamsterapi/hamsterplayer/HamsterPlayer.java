@@ -204,6 +204,8 @@ public class HamsterPlayer {
 			}
 
 			this.injected = true;
+			
+			hamsterAPI.getLogger().info("Succesfully injected player " + player.getName() + "!");
 		}
 	}
 
