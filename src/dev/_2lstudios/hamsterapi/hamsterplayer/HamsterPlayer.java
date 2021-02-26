@@ -169,8 +169,6 @@ public class HamsterPlayer {
 			this.toChatBaseComponent = iChatBaseComponentClass.getDeclaredClasses()[0].getDeclaredMethod("a",
 					String.class);
 			this.setup = true;
-
-			hamsterAPI.getLogger().info("Succesfully setup player " + player.getName() + "!");
 		}
 	}
 
@@ -203,9 +201,7 @@ public class HamsterPlayer {
 						"No ChannelHandler was found on the pipeline to inject " + hamsterChannelHandler);
 			}
 
-			this.injected = true;
-			
-			hamsterAPI.getLogger().info("Succesfully injected player " + player.getName() + "!");
+			this.injected = true;			
 		}
 	}
 
@@ -214,8 +210,6 @@ public class HamsterPlayer {
 			setup();
 		} catch (final IllegalAccessException | InvocationTargetException | NoSuchMethodException
 				| NoSuchFieldException e) {
-			logger.info("Failed to setup " + player.getName() + "! Reason: " + e.getMessage());
-
 			return false;
 		}
 
@@ -227,8 +221,6 @@ public class HamsterPlayer {
 			inject();
 		} catch (final IllegalAccessException | InvocationTargetException | NoSuchMethodException | NoSuchFieldException
 				| ClosedChannelException e) {
-			logger.info("Failed to inject " + player.getName() + "! Reason: " + e.getMessage());
-
 			return false;
 		}
 
