@@ -1,4 +1,4 @@
 name: HamsterAPI
-version: 0.1.6
+version: ${project.version}
 authors: [Sammwy, LinsaFTW]
 main: dev._2lstudios.hamsterapi.HamsterAPI
