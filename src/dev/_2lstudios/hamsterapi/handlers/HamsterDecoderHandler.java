@@ -39,6 +39,8 @@ public class HamsterDecoderHandler extends ByteToMessageDecoder {
 
 		if (!event.isCancelled()) {
 			list.add(bytebuf.readBytes(bytebuf.readableBytes()));
+		} else {
+			bytebuf.skipBytes(bytebuf.readableBytes());
 		}
 	}
 }
