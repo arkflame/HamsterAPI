@@ -27,7 +27,7 @@ public enum PacketType {
 	PacketPlayInEntityAction, PacketPlayInFlying, PacketPlayInHeldItemSlot, PacketPlayInKeepAlive, PacketPlayInLook,
 	PacketPlayInPosition, PacketPlayInPositionLook, PacketPlayInSetCreativeSlot, PacketPlayInSettings,
 	PacketPlayInSteerVehicle, PacketPlayInTabComplete, PacketPlayInTransaction, PacketPlayInUpdateSign,
-	PacketPlayInUseEntity, PacketPlayInWindowClick
+	PacketPlayInUseEntity, PacketPlayInWindowClick, PacketLoginInStart
 
 	;
 }
