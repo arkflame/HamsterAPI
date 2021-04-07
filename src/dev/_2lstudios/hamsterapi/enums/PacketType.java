@@ -28,7 +28,10 @@ public enum PacketType {
 	PacketPlayInPosition, PacketPlayInPositionLook, PacketPlayInSetCreativeSlot, PacketPlayInSettings,
 	PacketPlayInSteerVehicle, PacketPlayInTabComplete, PacketPlayInTransaction, PacketPlayInUpdateSign,
 	PacketPlayInUseEntity, PacketPlayInWindowClick, PacketPlayInAutoRecipe, PacketPlayInRecipeDisplayed, PacketPlayInBoatMove, 
-	PacketPlayInAdvancements, PacketPlayInResourcePackStatus
+	PacketPlayInAdvancements, PacketPlayInResourcePackStatus, PacketPlayInUseItem, PacketPlayInTrSel, PacketPlayInTileNBTQuery,
+	PacketPlayInTeleportAccept, PacketPlayInStruct, PacketPlayInSpectate, PacketPlayInSetJigsaw, PacketPlayInCommandBlock,
+	PacketPlayInCommandMinecart, PacketPlayInRecipeSettings, PacketPlayInPickItem, PacketPlayInJigsawGenerate, PacketPlayInItemName,
+	PacketPlayInDifficultyChange, PacketPlayInDifficultyLock
 
 	;
 }
