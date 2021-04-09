@@ -18,7 +18,7 @@ public class BufferIO {
 	private final Class<?> packetDataSerializerClass, networkManagerClass, enumProtocolClass,
 			enumProtocolDirectionClass;
 	private final Inflater inflater;
-	private final float bukkitVersion;
+	private final int bukkitVersion;
 	private final int compressionThreshold;
 
 	public BufferIO(final Reflection reflection, final String bukkitVersion, final int compressionThreshold) {
@@ -27,7 +27,7 @@ public class BufferIO {
 		this.enumProtocolClass = reflection.getNMSClass("EnumProtocol");
 		this.enumProtocolDirectionClass = reflection.getNMSClass("EnumProtocolDirection");
 		this.inflater = new Inflater();
-		this.bukkitVersion = Float.valueOf(bukkitVersion);
+		this.bukkitVersion = Integer.parseInt(bukkitVersion);
 		this.compressionThreshold = compressionThreshold;
 	}
 
@@ -123,7 +123,7 @@ public class BufferIO {
 			final Class<?> packetDataClass = packetDataSerializer.getClass();
 			final int id;
 
-			if (bukkitVersion > 112.2) {
+			if (bukkitVersion > 1122) {
 				id = (int) packetDataClass.getDeclaredMethod("g").invoke(packetDataSerializer);
 			} else {
 				id = (int) packetDataClass.getDeclaredMethod("e").invoke(packetDataSerializer);

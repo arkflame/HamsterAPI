@@ -34,10 +34,15 @@ public class HamsterAPI extends JavaPlugin {
 		return instance;
 	}
 
+	private static String getVersion(Server server) {
+        final String packageName = server.getClass().getPackage().getName();
+        return packageName.substring(packageName.lastIndexOf('.') + 1);
+    }
+
 	private void initialize() {
 		final Server server = getServer();
 		final Properties properties = getProperties();
-		final String bukkitVersion = server.getBukkitVersion().split("[-]")[0].replaceFirst("[.]", "");
+		final String bukkitVersion = getVersion(server).replaceAll("[^0-9]", "");
 		final int compressionThreshold = (int) properties.getOrDefault("network_compression_threshold", 256);
 
 		setInstance(this);
