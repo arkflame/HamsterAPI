@@ -13,7 +13,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import dev._2lstudios.hamsterapi.hamsterplayer.HamsterPlayer;
 import dev._2lstudios.hamsterapi.hamsterplayer.HamsterPlayerManager;
 import dev._2lstudios.hamsterapi.listeners.PlayerJoinListener;
-import dev._2lstudios.hamsterapi.listeners.PlayerLoginListener;
 import dev._2lstudios.hamsterapi.listeners.PlayerQuitListener;
 import dev._2lstudios.hamsterapi.messengers.BungeeMessenger;
 import dev._2lstudios.hamsterapi.utils.BufferIO;
@@ -75,7 +74,6 @@ public class HamsterAPI extends JavaPlugin {
 
 		server.getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
 		pluginManager.registerEvents(new PlayerJoinListener(this), this);
-		pluginManager.registerEvents(new PlayerLoginListener(this), this);
 		pluginManager.registerEvents(new PlayerQuitListener(hamsterPlayerManager), this);
 
 		for (final Player player : server.getOnlinePlayers()) {
