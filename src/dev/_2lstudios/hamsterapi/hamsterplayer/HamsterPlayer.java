@@ -4,15 +4,13 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.channels.ClosedChannelException;
-import java.util.logging.Logger;
 
-import org.bukkit.Server;
 import org.bukkit.entity.Player;
 
 import dev._2lstudios.hamsterapi.HamsterAPI;
+import dev._2lstudios.hamsterapi.enums.HamsterHandler;
 import dev._2lstudios.hamsterapi.handlers.HamsterChannelHandler;
 import dev._2lstudios.hamsterapi.handlers.HamsterDecoderHandler;
-import dev._2lstudios.hamsterapi.enums.HamsterHandler;
 import dev._2lstudios.hamsterapi.utils.Reflection;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
@@ -40,6 +38,7 @@ public class HamsterPlayer {
 		return this.player;
 	}
 
+	// Sends an ActionBar to the HamsterPlayer
 	public void sendActionbar(final String text) {
 		final Reflection reflection = hamsterAPI.getReflection();
 
@@ -54,6 +53,7 @@ public class HamsterPlayer {
 		}
 	}
 
+	// Sends a Title to the HamsterPlayer
 	public void sendTitle(String title, String subtitle, int fadeInTime, int showTime, int fadeOutTime) {
 		final Reflection reflection = hamsterAPI.getReflection();
 
@@ -85,39 +85,24 @@ public class HamsterPlayer {
 		}
 	}
 
+	// Sends the HamsterPlayer to another Bungee server
 	public void sendServer(final String serverName) {
 		hamsterAPI.getBungeeMessenger().sendPluginMessage("ConnectOther", player.getName(), serverName);
 	}
 
+	// Forcibly disconnects the HamsterPlayer
 	public void closeChannel() {
 		if (channel != null && channel.isActive()) {
 			channel.close();
 		}
+
+		disconnect(null);
 	}
 
+	// Disconnects the HamsterPlayer from Bungee and Bukkit
 	public void disconnect(final String reason) {
-		final Reflection reflection = hamsterAPI.getReflection();
-		final Server server = hamsterAPI.getServer();
-
-		try {
-			final Object chatKick = toChatBaseComponent.invoke(null, "{ \"text\":\"" + reason + "\" }");
-			final Object packet = reflection.getNMSClass("PacketPlayOutKickDisconnect")
-					.getConstructor(iChatBaseComponentClass).newInstance(chatKick);
-
-			sendPacket(packet);
-		} catch (final Exception e) {
-			e.printStackTrace();
-		}
-
 		hamsterAPI.getBungeeMessenger().sendPluginMessage("kickPlayer", player.getName(), reason);
-
-		if (server.isPrimaryThread()) {
-			player.kickPlayer(reason);
-		} else {
-			server.getScheduler().runTask(hamsterAPI, () -> {
-				player.kickPlayer(reason);
-			});
-		}
+		player.kickPlayer(reason);
 	}
 
 	public void sendPacket(final Object packet) {
@@ -140,6 +125,7 @@ public class HamsterPlayer {
 		return channel;
 	}
 
+	// Removes handlers from the player pipeline
 	public void uninject() {
 		if (injected && channel != null && channel.isActive()) {
 			final ChannelPipeline pipeline = channel.pipeline();
@@ -154,6 +140,7 @@ public class HamsterPlayer {
 		}
 	}
 
+	// Sets variables to simplify packet handling and inject
 	public void setup()
 			throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, NoSuchFieldException {
 		if (!setup) {
@@ -172,6 +159,7 @@ public class HamsterPlayer {
 		}
 	}
 
+	// Injects handlers to the player pipeline with NMS
 	public void inject() throws IllegalAccessException, InvocationTargetException, NoSuchMethodException,
 			NoSuchFieldException, ClosedChannelException {
 		if (!injected) {
@@ -205,19 +193,10 @@ public class HamsterPlayer {
 		}
 	}
 
-	public boolean trySetup(final Logger logger) {
+	// Injects but instead of returning an exception returns sucess (Boolean)
+	public boolean tryInject() {
 		try {
 			setup();
-		} catch (final IllegalAccessException | InvocationTargetException | NoSuchMethodException
-				| NoSuchFieldException e) {
-			return false;
-		}
-
-		return true;
-	}
-
-	public boolean tryInject(final Logger logger) {
-		try {
 			inject();
 		} catch (final IllegalAccessException | InvocationTargetException | NoSuchMethodException | NoSuchFieldException
 				| ClosedChannelException e) {
@@ -225,9 +204,5 @@ public class HamsterPlayer {
 		}
 
 		return true;
-	}
-
-	public boolean trySetupInject(final Logger logger) {
-		return trySetup(logger) && tryInject(logger);
 	}
 }

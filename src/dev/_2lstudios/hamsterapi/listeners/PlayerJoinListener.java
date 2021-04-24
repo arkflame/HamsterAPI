@@ -26,6 +26,6 @@ public class PlayerJoinListener implements Listener {
         final Player player = event.getPlayer();
         final HamsterPlayer hamsterPlayer = hamsterPlayerManager.add(player);
 
-        hamsterPlayer.trySetupInject(logger);
+        hamsterPlayer.tryInject();
     }
 }
