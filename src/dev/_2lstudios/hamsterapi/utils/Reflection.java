@@ -20,7 +20,7 @@ public class Reflection {
 
 		final Object fieldValue;
 		final Field field = object.getClass().getField(fieldName);
-		final boolean accessible = field.canAccess(object);
+		final boolean accessible = field.isAccessible();
 
 		field.setAccessible(true);
 		fieldValue = field.get(object);
