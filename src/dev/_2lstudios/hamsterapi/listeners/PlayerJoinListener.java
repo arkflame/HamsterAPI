@@ -26,6 +26,9 @@ public class PlayerJoinListener implements Listener {
         final Player player = event.getPlayer();
         final HamsterPlayer hamsterPlayer = hamsterPlayerManager.add(player);
 
-        hamsterPlayer.tryInject();
+        if (!hamsterPlayer.tryInject()) {
+            logger.warning("Failed to inject player " + player.getName()
+                    + " please contact 2LStudios for support about HamsterAPI as this can lead to vulnerabilities.");
+        }
     }
 }
