@@ -5,6 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.channels.ClosedChannelException;
 
+import org.bukkit.Server;
 import org.bukkit.entity.Player;
 
 import dev._2lstudios.hamsterapi.HamsterAPI;
@@ -90,19 +91,37 @@ public class HamsterPlayer {
 		hamsterAPI.getBungeeMessenger().sendPluginMessage("ConnectOther", player.getName(), serverName);
 	}
 
-	// Forcibly disconnects the HamsterPlayer
+	// Forcibly closes the player connection
 	public void closeChannel() {
 		if (channel != null && channel.isActive()) {
 			channel.close();
 		}
 
-		disconnect(null);
+		disconnect("");
 	}
 
-	// Disconnects the HamsterPlayer from Bungee and Bukkit
+	// Disconnect the HamsterPlayer with packets
 	public void disconnect(final String reason) {
+		final Reflection reflection = hamsterAPI.getReflection();
+		final Server server = hamsterAPI.getServer();
+
+		try {
+			final Object chatKick = toChatBaseComponent.invoke(null, "{ \"text\":\"" + reason + "\" }");
+			final Object packet = reflection.getNMSClass("PacketPlayOutKickDisconnect")
+					.getConstructor(iChatBaseComponentClass).newInstance(chatKick);
+
+			sendPacket(packet);
+		} catch (final Exception e) {
+			e.printStackTrace();
+		}
+
 		hamsterAPI.getBungeeMessenger().sendPluginMessage("kickPlayer", player.getName(), reason);
-		player.kickPlayer(reason);
+
+		if (server.isPrimaryThread()) {
+			player.kickPlayer(reason);
+		} else {
+			server.getScheduler().runTask(hamsterAPI, () -> player.kickPlayer(reason));
+		}
 	}
 
 	public void sendPacket(final Object packet) {
