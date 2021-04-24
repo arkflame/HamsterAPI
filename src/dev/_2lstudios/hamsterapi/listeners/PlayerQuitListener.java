@@ -1,6 +1,5 @@
 package dev._2lstudios.hamsterapi.listeners;
 
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -17,8 +16,6 @@ public class PlayerQuitListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPlayerQuit(final PlayerQuitEvent event) {
-        final Player player = event.getPlayer();
-
-        hamsterPlayerManager.remove(player);
+        hamsterPlayerManager.remove(event.getPlayer());
     }
 }
