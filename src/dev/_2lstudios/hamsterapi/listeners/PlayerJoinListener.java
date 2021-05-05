@@ -21,7 +21,7 @@ public class PlayerJoinListener implements Listener {
         this.hamsterPlayerManager = hamsterAPI.getHamsterPlayerManager();
     }
 
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onPlayerJoin(final PlayerJoinEvent event) {
         final Player player = event.getPlayer();
         final HamsterPlayer hamsterPlayer = hamsterPlayerManager.add(player);
