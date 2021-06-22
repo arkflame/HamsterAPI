@@ -160,7 +160,7 @@ public class HamsterPlayer {
 	}
 
 	// Sets variables to simplify packet handling and inject
-	public void setup()
+	private void setup()
 			throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, NoSuchFieldException {
 		if (!setup) {
 			final Reflection reflection = hamsterAPI.getReflection();
@@ -179,11 +179,9 @@ public class HamsterPlayer {
 	}
 
 	// Injects handlers to the player pipeline with NMS
-	public void inject() throws IllegalAccessException, InvocationTargetException, NoSuchMethodException,
+	private void inject() throws IllegalAccessException, InvocationTargetException, NoSuchMethodException,
 			NoSuchFieldException, ClosedChannelException {
 		if (!injected) {
-			setup();
-
 			if (!channel.isActive()) {
 				throw new ClosedChannelException();
 			}
@@ -208,7 +206,7 @@ public class HamsterPlayer {
 						"No ChannelHandler was found on the pipeline to inject " + hamsterChannelHandler);
 			}
 
-			this.injected = true;			
+			this.injected = true;
 		}
 	}
 
