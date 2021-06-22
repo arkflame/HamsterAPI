@@ -30,12 +30,22 @@ public class Reflection {
 	}
 
 	public Class<?> getNMSClass(String key) {
+		return this.getNMSClass(key, true);
+	}
+
+	public Class<?> getNMSClass(String key, boolean byVersion) {
 		if (this.classes.containsKey(key)) {
 			return this.classes.get(key);
 		}
 
 		try {
-			Class<?> nmsClass = Class.forName("net.minecraft.server." + this.version + "." + key);
+			String name = "net.minecraft.server.";
+			
+			if (byVersion) {
+				name += this.version + ".";
+			}
+
+			Class<?> nmsClass = Class.forName(name + key);
 
 			this.classes.put(key, nmsClass);
 
