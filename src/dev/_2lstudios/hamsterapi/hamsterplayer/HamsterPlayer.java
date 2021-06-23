@@ -21,6 +21,7 @@ import io.netty.handler.codec.ByteToMessageDecoder;
 public class HamsterPlayer {
 	private final Player player;
 	private final HamsterAPI hamsterAPI;
+	private Object handle;
 	private Object playerConnection;
 	private Object networkManager;
 	private Channel channel;
@@ -132,6 +133,10 @@ public class HamsterPlayer {
 		}
 	}
 
+	public Object getHandle() {
+		return handle;
+	}
+
 	public Object getPlayerConnection() {
 		return playerConnection;
 	}
@@ -159,15 +164,36 @@ public class HamsterPlayer {
 		}
 	}
 
+	private void setupHandle(final Reflection reflection) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
+		handle = player.getClass().getDeclaredMethod("getHandle").invoke(player);
+	}
+
+	private void setupPlayerConnection(final Reflection reflection) throws NoSuchFieldException, IllegalAccessException {
+		playerConnection = reflection.getField(handle, "playerConnection");
+
+		if (playerConnection == null) {
+			playerConnection = reflection.getFieldByClass(reflection.getNMSClass("server.network.PlayerConnection", false), handle);
+		}
+	}
+
+	private void setupNetworkManager(final Reflection reflection) throws NoSuchFieldException, IllegalAccessException {
+		networkManager = reflection.getField(playerConnection, "networkManager");
+
+		if (networkManager == null) {
+			networkManager = reflection.getFieldByClass(reflection.getNMSClass("network.NetworkManager", false), playerConnection);
+		}
+	}
+
 	// Sets variables to simplify packet handling and inject
 	private void setup()
 			throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, NoSuchFieldException {
 		if (!setup) {
 			final Reflection reflection = hamsterAPI.getReflection();
-			final Object handler = player.getClass().getDeclaredMethod("getHandle").invoke(player);
 
-			this.playerConnection = reflection.getField(handler, "playerConnection");
-			this.networkManager = reflection.getField(playerConnection, "networkManager");
+			setupHandle(reflection);
+			setupPlayerConnection(reflection);
+			setupNetworkManager(reflection);
+
 			this.channel = (Channel) reflection.getField(networkManager, "channel");
 			this.iChatBaseComponentClass = reflection.getNMSClass("IChatBaseComponent");
 			this.sendPacketMethod = this.playerConnection.getClass().getDeclaredMethod("sendPacket",

@@ -29,6 +29,19 @@ public class Reflection {
 		return fieldValue;
 	}
 
+	public Object getFieldByClass(final Class<?> requiredClass, final Object object)
+			throws IllegalArgumentException, IllegalAccessException {
+		final Class<?> objectClass = object.getClass();
+
+		for (final Field field : objectClass.getFields()) {
+			if (requiredClass.isAssignableFrom(field.getType())) {
+				return field.get(object);
+			}
+		}
+
+		return null;
+	}
+
 	public Class<?> getNMSClass(String key) {
 		return this.getNMSClass(key, true);
 	}
@@ -39,8 +52,8 @@ public class Reflection {
 		}
 
 		try {
-			String name = "net.minecraft.server.";
-			
+			String name = "net.minecraft.";
+
 			if (byVersion) {
 				name += this.version + ".";
 			}
@@ -51,6 +64,7 @@ public class Reflection {
 
 			return nmsClass;
 		} catch (final ClassNotFoundException e) {
+			// Ignored
 		}
 
 		return null;
