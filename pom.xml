@@ -1,8 +1,8 @@
 <project>
   <modelVersion>4.0.0</modelVersion>
-  <groupId>hamsterapi</groupId>
+  <groupId>dev._2lstudios</groupId>
   <artifactId>HamsterAPI</artifactId>
-  <version>SNAPSHOT</version>
+  <version>0.1.8</version>
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
