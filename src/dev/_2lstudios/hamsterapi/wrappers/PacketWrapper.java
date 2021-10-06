@@ -13,6 +13,7 @@ import dev._2lstudios.hamsterapi.utils.Reflection;
 
 public class PacketWrapper {
 	private final Class<?> craftItemStackClass;
+	private final Class<?> nmsItemStackClass;
 	private final Object packet;
 	private final String name;
 
@@ -31,6 +32,7 @@ public class PacketWrapper {
 		final Class<?> itemStackClass = reflection.getItemStack();
 
 		this.craftItemStackClass = reflection.getCraftItemStack();
+		this.nmsItemStackClass = reflection.getItemStack();
 		this.packet = packet;
 		this.name = packetClass.getSimpleName();
 
@@ -56,7 +58,7 @@ public class PacketWrapper {
 				}
 
 				if (itemStackClass.isInstance(value)) {
-					final Method asBukkitCopy = craftItemStackClass.getDeclaredMethod("asBukkitCopy", itemStackClass);
+					final Method asBukkitCopy = craftItemStackClass.getDeclaredMethod("asBukkitCopy", ItemStack.class);
 					final ItemStack itemStack = (ItemStack) asBukkitCopy.invoke(null, value);
 
 					this.items.put(fieldName, itemStack);
@@ -105,8 +107,8 @@ public class PacketWrapper {
 	public void write(final String key, final ItemStack itemStack) {
 		try {
 			final Field field = this.packet.getClass().getDeclaredField(key);
-			final Method asCraftCopy = craftItemStackClass.getDeclaredMethod("asNMSCopy", ItemStack.class);
-			final Object nmsItemStack = asCraftCopy.invoke(null, itemStack);
+			final Method asNmsCopy = craftItemStackClass.getDeclaredMethod("asNMSCopy", nmsItemStackClass);
+			final Object nmsItemStack = asNmsCopy.invoke(null, itemStack);
 
 			field.setAccessible(true);
 			field.set(packet, nmsItemStack);
