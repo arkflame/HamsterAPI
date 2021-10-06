@@ -46,7 +46,7 @@ public class Reflection {
 		return null;
 	}
 
-	private Class<?> getNewNMClass(String key) {
+	private Class<?> getNewNetMinecraftClass(String key) {
 		try {
 			return getClass("net.minecraft." + key);
 		} catch (final ClassNotFoundException e) {
@@ -66,17 +66,30 @@ public class Reflection {
 			/* Ignored */
 		}
 
-		return getNewNMClass(key);
+		return getNewNetMinecraftClass(key);
 	}
 
-	private Class<?> getCraftBukkitClass(String key) {
+	private Class<?> getNewCraftBukkitClass(String key) {
 		try {
-			getClass("org.bukkit.craftbukkit." + this.version + "." + key);
+			return getClass("org.bukkit.craftbukkit." + this.version + "." + key);
 		} catch (final ClassNotFoundException e) {
 			/* Ignored */
 		}
 
 		return null;
+	}
+
+	private Class<?> getCraftBukkitClass(String key) {
+		try {
+			final int lastDot = key.lastIndexOf(".");
+			final String lastKey = key.substring(lastDot > 0 ? lastDot + 1 : 0, key.length());
+
+			return getClass("org.bukkit.craftbukkit." + this.version + "." + lastKey);
+		} catch (final ClassNotFoundException e) {
+			/* Ignored */
+		}
+
+		return getNewCraftBukkitClass(key);
 	}
 
 	public Class<?> getItemStack() {
