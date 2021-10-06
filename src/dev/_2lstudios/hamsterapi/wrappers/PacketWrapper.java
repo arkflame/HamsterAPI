@@ -26,11 +26,11 @@ public class PacketWrapper {
 
 	public PacketWrapper(final Object packet) {
 		final Reflection reflection = HamsterAPI.getInstance().getReflection();
-		final Class<?> minecraftKeyClass = reflection.getNMSClass("MinecraftKey");
+		final Class<?> minecraftKeyClass = reflection.getMinecraftKey();
 		final Class<?> packetClass = packet.getClass();
-		final Class<?> itemStackClass = reflection.getNMSClass("ItemStack");
+		final Class<?> itemStackClass = reflection.getItemStack();
 
-		this.craftItemStackClass = reflection.getCraftBukkitClass("inventory.CraftItemStack");
+		this.craftItemStackClass = reflection.getCraftItemStack();
 		this.packet = packet;
 		this.name = packetClass.getSimpleName();
 

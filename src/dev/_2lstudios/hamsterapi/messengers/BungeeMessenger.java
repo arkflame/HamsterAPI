@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 import dev._2lstudios.hamsterapi.HamsterAPI;
-import dev._2lstudios.hamsterapi.utils.Utilities;
+import dev._2lstudios.hamsterapi.utils.BukkitUtils;
 
 public class BungeeMessenger {
 	private final HamsterAPI instance;
@@ -17,7 +17,7 @@ public class BungeeMessenger {
 	}
 
 	public void sendPluginMessage(final String subChannel, final String... args) {
-		final Player messenger = Utilities.getRandomPlayer();
+		final Player messenger = BukkitUtils.getRandomPlayer();
 
 		if (messenger != null) {
 			final ByteArrayDataOutput out = ByteStreams.newDataOutput();

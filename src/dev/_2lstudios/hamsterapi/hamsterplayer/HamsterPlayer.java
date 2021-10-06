@@ -4,6 +4,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.channels.ClosedChannelException;
+import java.util.UUID;
 
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
@@ -39,50 +40,93 @@ public class HamsterPlayer {
 		return this.player;
 	}
 
+	public void sendActionbarPacketOld(final String text) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, InstantiationException, NoSuchMethodException, SecurityException {
+		final Reflection reflection = hamsterAPI.getReflection();
+		final Object chatAction = toChatBaseComponent.invoke(null, "{ \"text\":\"" + text + "\" }");
+		final Object packet = reflection.getPacketPlayOutChat().getConstructor(iChatBaseComponentClass, byte.class)
+				.newInstance(chatAction, (byte) 2);
+
+		sendPacket(packet);
+	}
+
+	public void sendActionbarPacketNew(final String text) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, InstantiationException, NoSuchMethodException, SecurityException {
+		final Reflection reflection = hamsterAPI.getReflection();
+		final Object chatAction = toChatBaseComponent.invoke(null, "{ \"text\":\"" + text + "\" }");
+		final Class<?> chatMessageTypeClass = reflection.getChatMessageType();
+		final Object[] enumConstants = chatMessageTypeClass.getEnumConstants();
+		final Object packet = reflection.getPacketPlayOutChat()
+				.getConstructor(iChatBaseComponentClass, chatMessageTypeClass, UUID.class).newInstance(chatAction, enumConstants[2], player.getUniqueId());
+
+		sendPacket(packet);
+	}
+
 	// Sends an ActionBar to the HamsterPlayer
 	public void sendActionbar(final String text) {
-		final Reflection reflection = hamsterAPI.getReflection();
-
 		try {
-			Object chatAction = toChatBaseComponent.invoke(null, "{ \"text\":\"" + text + "\" }");
-			Object packet = reflection.getNMSClass("PacketPlayOutChat")
-					.getConstructor(iChatBaseComponentClass, byte.class).newInstance(chatAction, (byte) 2);
-
-			sendPacket(packet);
-		} catch (final Exception e) {
-			e.printStackTrace();
+			sendActionbarPacketNew(text);
+		} catch (final Exception e1) {
+			try {
+				sendActionbarPacketOld(text);
+			} catch (final Exception e2) {
+				hamsterAPI.getLogger().info("Failed to send actionbar packet to player " + player.getName() + "!");
+			}
 		}
 	}
 
-	// Sends a Title to the HamsterPlayer
-	public void sendTitle(String title, String subtitle, int fadeInTime, int showTime, int fadeOutTime) {
+	public void sendTitlePacketOld(final String title, final String subtitle, final int fadeInTime, final int showTime, final int fadeOutTime)
+			throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException,
+			SecurityException, InstantiationException, NoSuchFieldException {
 		final Reflection reflection = hamsterAPI.getReflection();
 
+		final Object chatTitle = toChatBaseComponent.invoke(null, "{ \"text\":\"" + title + "\" }");
+		final Object chatSubTitle = toChatBaseComponent.invoke(null, "{ \"text\":\"" + subtitle + "\" }");
+		final Class<?> enumTitleActionClass = reflection.getPacketPlayOutTitle().getDeclaredClasses()[0];
+		final Constructor<?> titleConstructor = reflection.getPacketPlayOutTitle().getConstructor(enumTitleActionClass,
+				iChatBaseComponentClass, int.class, int.class, int.class);
+		final Object titlePacket = titleConstructor.newInstance(enumTitleActionClass.getDeclaredField("TITLE").get(null),
+				chatTitle, fadeInTime, showTime, fadeOutTime);
+		final Object subtitlePacket = titleConstructor.newInstance(
+				enumTitleActionClass.getDeclaredField("SUBTITLE").get(null), chatSubTitle, fadeInTime, showTime,
+				fadeOutTime);
+
+		sendPacket(titlePacket);
+		sendPacket(subtitlePacket);
+	}
+
+	public void sendTitlePacketNew(final String title, final String subtitle, final int fadeInTime, final int showTime, final int fadeOutTime)
+			throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException,
+			SecurityException, InstantiationException, NoSuchFieldException {
+		final Reflection reflection = hamsterAPI.getReflection();
+
+		final Constructor<?> timingTitleConstructor = reflection.getClientboundSetTitlesAnimationPacket()
+				.getConstructor(int.class, int.class, int.class);
+		final Object timingPacket = timingTitleConstructor.newInstance(fadeInTime, showTime, fadeOutTime);
+
+		final Object chatTitle = toChatBaseComponent.invoke(null, "{ \"text\":\"" + title + "\" }");
+		final Constructor<?> titleConstructor = reflection.getClientboundSetTitleTextPacket()
+				.getConstructor(iChatBaseComponentClass);
+		final Object titlePacket = titleConstructor.newInstance(chatTitle);
+
+		final Object chatSubTitle = toChatBaseComponent.invoke(null, "{ \"text\":\"" + subtitle + "\" }");
+		final Constructor<?> subTitleConstructor = reflection.getClientboundSetSubtitleTextPacket()
+				.getConstructor(iChatBaseComponentClass);
+		final Object subTitlePacket = subTitleConstructor.newInstance(chatSubTitle);
+
+		sendPacket(timingPacket);
+		sendPacket(titlePacket);
+		sendPacket(subTitlePacket);
+	}
+
+	// Sends a Title to the HamsterPlayer
+	public void sendTitle(final String title, final String subtitle, final int fadeInTime, final int showTime, final int fadeOutTime) {
 		try {
-			Object chatTitle = toChatBaseComponent.invoke(null, "{ \"text\":\"" + title + "\" }");
-			Constructor<?> titleConstructor = reflection.getNMSClass("PacketPlayOutTitle").getConstructor(
-					reflection.getNMSClass("PacketPlayOutTitle").getDeclaredClasses()[0], iChatBaseComponentClass,
-					int.class, int.class, int.class);
-
-			Object packet = titleConstructor
-					.newInstance(reflection.getNMSClass("PacketPlayOutTitle").getDeclaredClasses()[0]
-							.getDeclaredField("TITLE").get(null), chatTitle, fadeInTime, showTime, fadeOutTime);
-
-			Object chatSubTitle = toChatBaseComponent.invoke(null, "{ \"text\":\"" + subtitle + "\" }");
-			Constructor<?> timingTitleConstructor = reflection.getNMSClass("PacketPlayOutTitle").getConstructor(
-					reflection.getNMSClass("PacketPlayOutTitle").getDeclaredClasses()[0], iChatBaseComponentClass,
-					int.class, int.class, int.class);
-
-			Object timingPacket = timingTitleConstructor
-					.newInstance(
-							reflection.getNMSClass("PacketPlayOutTitle").getDeclaredClasses()[0]
-									.getDeclaredField("SUBTITLE").get(null),
-							chatSubTitle, fadeInTime, showTime, fadeOutTime);
-
-			sendPacket(packet);
-			sendPacket(timingPacket);
-		} catch (Exception e) {
-			e.printStackTrace();
+			sendTitlePacketNew(title, subtitle, fadeInTime, showTime, fadeOutTime);
+		} catch (final Exception e1) {
+			try {
+				sendTitlePacketOld(title, subtitle, fadeInTime, showTime, fadeOutTime);
+			} catch (final Exception e2) {
+				hamsterAPI.getLogger().info("Failed to send title packet to player " + player.getName() + "!");
+			}
 		}
 	}
 
@@ -107,12 +151,12 @@ public class HamsterPlayer {
 
 		try {
 			final Object chatKick = toChatBaseComponent.invoke(null, "{ \"text\":\"" + reason + "\" }");
-			final Object packet = reflection.getNMSClass("PacketPlayOutKickDisconnect")
-					.getConstructor(iChatBaseComponentClass).newInstance(chatKick);
+			final Object packet = reflection.getPacketPlayOutKickDisconnect().getConstructor(iChatBaseComponentClass)
+					.newInstance(chatKick);
 
 			sendPacket(packet);
 		} catch (final Exception e) {
-			e.printStackTrace();
+			hamsterAPI.getLogger().info("Failed to send disconnect packet to player " + player.getName() + "!");
 		}
 
 		hamsterAPI.getBungeeMessenger().sendPluginMessage("kickPlayer", player.getName(), reason);
@@ -128,7 +172,7 @@ public class HamsterPlayer {
 		try {
 			sendPacketMethod.invoke(playerConnection, packet);
 		} catch (final Exception e) {
-			e.printStackTrace();
+			hamsterAPI.getLogger().info("Failed to send packet to player " + player.getName() + "!");
 		}
 	}
 
@@ -166,12 +210,12 @@ public class HamsterPlayer {
 			final Reflection reflection = hamsterAPI.getReflection();
 			final Object handler = player.getClass().getDeclaredMethod("getHandle").invoke(player);
 
-			this.playerConnection = reflection.getField(handler, "playerConnection");
-			this.networkManager = reflection.getField(playerConnection, "networkManager");
-			this.channel = (Channel) reflection.getField(networkManager, "channel");
-			this.iChatBaseComponentClass = reflection.getNMSClass("IChatBaseComponent");
+			this.playerConnection = reflection.getField(handler, reflection.getPlayerConnection());
+			this.networkManager = reflection.getField(playerConnection, reflection.getNetworkManager());
+			this.channel = (Channel) reflection.getField(networkManager, Channel.class);
+			this.iChatBaseComponentClass = reflection.getIChatBaseComponent();
 			this.sendPacketMethod = this.playerConnection.getClass().getDeclaredMethod("sendPacket",
-					reflection.getNMSClass("Packet"));
+					reflection.getPacket());
 			this.toChatBaseComponent = iChatBaseComponentClass.getDeclaredClasses()[0].getDeclaredMethod("a",
 					String.class);
 			this.setup = true;
@@ -208,7 +252,7 @@ public class HamsterPlayer {
 						"No ChannelHandler was found on the pipeline to inject " + hamsterChannelHandler);
 			}
 
-			this.injected = true;			
+			this.injected = true;
 		}
 	}
 

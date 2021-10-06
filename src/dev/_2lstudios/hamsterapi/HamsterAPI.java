@@ -34,9 +34,9 @@ public class HamsterAPI extends JavaPlugin {
 	}
 
 	private static String getVersion(Server server) {
-        final String packageName = server.getClass().getPackage().getName();
-        return packageName.substring(packageName.lastIndexOf('.') + 1);
-    }
+		final String packageName = server.getClass().getPackage().getName();
+		return packageName.substring(packageName.lastIndexOf('.') + 1);
+	}
 
 	private void initialize() {
 		final Server server = getServer();
@@ -77,7 +77,7 @@ public class HamsterAPI extends JavaPlugin {
 		pluginManager.registerEvents(new PlayerQuitListener(hamsterPlayerManager), this);
 
 		for (final Player player : server.getOnlinePlayers()) {
-			final HamsterPlayer hamsterPlayer = this.hamsterPlayerManager.get(player);
+			final HamsterPlayer hamsterPlayer = this.hamsterPlayerManager.add(player);
 
 			hamsterPlayer.tryInject();
 		}
@@ -92,7 +92,9 @@ public class HamsterAPI extends JavaPlugin {
 		for (final Player player : server.getOnlinePlayers()) {
 			final HamsterPlayer hamsterPlayer = this.hamsterPlayerManager.get(player);
 
-			hamsterPlayer.uninject();
+			if (hamsterPlayer != null) {
+				hamsterPlayer.uninject();
+			}
 
 			this.hamsterPlayerManager.remove(player);
 		}

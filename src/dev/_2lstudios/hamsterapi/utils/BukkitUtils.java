@@ -5,7 +5,7 @@ import java.util.Collection;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-public class Utilities {
+public class BukkitUtils {
 	public static Player getRandomPlayer() {
 		final Collection<? extends Player> players = Bukkit.getServer().getOnlinePlayers();
 

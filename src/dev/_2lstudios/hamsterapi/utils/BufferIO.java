@@ -22,10 +22,10 @@ public class BufferIO {
 	private final int compressionThreshold;
 
 	public BufferIO(final Reflection reflection, final String bukkitVersion, final int compressionThreshold) {
-		this.packetDataSerializerClass = reflection.getNMSClass("PacketDataSerializer");
-		this.networkManagerClass = reflection.getNMSClass("NetworkManager");
-		this.enumProtocolClass = reflection.getNMSClass("EnumProtocol");
-		this.enumProtocolDirectionClass = reflection.getNMSClass("EnumProtocolDirection");
+		this.packetDataSerializerClass = reflection.getPacketDataSerializer();
+		this.networkManagerClass = reflection.getNetworkManager();
+		this.enumProtocolClass = reflection.getEnumProtocol();
+		this.enumProtocolDirectionClass = reflection.getEnumProtocolDirection();
 		this.inflater = new Inflater();
 		this.bukkitVersion = Integer.parseInt(bukkitVersion);
 		this.compressionThreshold = compressionThreshold;

@@ -8,7 +8,7 @@ public class Reflection {
 	private final String version;
 	private final Map<String, Class<?>> classes = new HashMap<>();
 
-	public Reflection(String version) {
+	public Reflection(final String version) {
 		this.version = version;
 	}
 
@@ -24,26 +24,31 @@ public class Reflection {
 		return craftBukkitClass;
 	}
 
-	public Object getField(final Object object, final String fieldName)
-			throws NoSuchFieldException, IllegalAccessException {
+	public Object getField(final Object object, final Class<?> fieldType) throws IllegalAccessException {
 		if (object == null) {
 			throw new IllegalAccessException("Tried to access field from a null object");
 		}
 
-		final Object fieldValue;
-		final Field field = object.getClass().getField(fieldName);
-		final boolean accessible = field.isAccessible();
+		for (final Field field : object.getClass().getFields()) {
+			if (field.getType().equals(fieldType)) {
+				final boolean accessible = field.isAccessible();
 
-		field.setAccessible(true);
-		fieldValue = field.get(object);
-		field.setAccessible(accessible);
+				field.setAccessible(true);
 
-		return fieldValue;
+				final Object value = field.get(object);
+
+				field.setAccessible(accessible);
+
+				return value;
+			}
+		}
+
+		return null;
 	}
 
-	public Class<?> getNewNMSClass117(String key) {
+	private Class<?> getNewNMClass(String key) {
 		try {
-			return getClass("net.minecraft.server." + key);
+			return getClass("net.minecraft." + key);
 		} catch (final ClassNotFoundException e) {
 			/* Ignored */
 		}
@@ -51,17 +56,20 @@ public class Reflection {
 		return null;
 	}
 
-	public Class<?> getNMSClass(String key) {
+	private Class<?> getNetMinecraftClass(String key) {
 		try {
-			return getClass("net.minecraft.server." + this.version + "." + key);
-		} catch (final ClassNotFoundException e1) {
+			final int lastDot = key.lastIndexOf(".");
+			final String lastKey = key.substring(lastDot > 0 ? lastDot + 1 : 0, key.length());
+
+			return getClass("net.minecraft.server." + this.version + "." + lastKey);
+		} catch (final ClassNotFoundException e) {
 			/* Ignored */
 		}
 
-		return getNewNMSClass117(key);
+		return getNewNMClass(key);
 	}
 
-	public Class<?> getCraftBukkitClass(String key) {
+	private Class<?> getCraftBukkitClass(String key) {
 		try {
 			getClass("org.bukkit.craftbukkit." + this.version + "." + key);
 		} catch (final ClassNotFoundException e) {
@@ -69,5 +77,73 @@ public class Reflection {
 		}
 
 		return null;
+	}
+
+	public Class<?> getItemStack() {
+		return getNetMinecraftClass("world.item.ItemStack");
+	}
+
+	public Class<?> getMinecraftKey() {
+		return getNetMinecraftClass("resources.MinecraftKey");
+	}
+
+	public Class<?> getEnumProtocol() {
+		return getNetMinecraftClass("network.EnumProtocol");
+	}
+
+	public Class<?> getEnumProtocolDirection() {
+		return getNetMinecraftClass("network.protocol.EnumProtocolDirection");
+	}
+
+	public Class<?> getNetworkManager() {
+		return getNetMinecraftClass("network.NetworkManager");
+	}
+
+	public Class<?> getPacketDataSerializer() {
+		return getNetMinecraftClass("network.PacketDataSerializer");
+	}
+
+	public Class<?> getPacket() {
+		return getNetMinecraftClass("network.protocol.Packet");
+	}
+
+	public Class<?> getIChatBaseComponent() {
+		return getNetMinecraftClass("network.chat.IChatBaseComponent");
+	}
+
+	public Class<?> getPacketPlayOutKickDisconnect() {
+		return getNetMinecraftClass("network.protocol.game.PacketPlayOutKickDisconnect");
+	}
+
+	public Class<?> getPacketPlayOutTitle() {
+		return getNetMinecraftClass("network.protocol.game.PacketPlayOutTitle");
+	}
+
+	public Class<?> getPacketPlayOutChat() {
+		return getNetMinecraftClass("network.protocol.game.PacketPlayOutChat");
+	}
+
+	public Class<?> getPlayerConnection() {
+		return getNetMinecraftClass("server.network.PlayerConnection");
+	}
+
+	public Class<?> getClientboundSetTitlesAnimationPacket() {
+		return getNetMinecraftClass("network.protocol.game.ClientboundSetTitlesAnimationPacket");
+	}
+
+	public Class<?> getClientboundSetTitleTextPacket() {
+		return getNetMinecraftClass("network.protocol.game.ClientboundSetTitleTextPacket");
+	}
+
+	public Class<?> getClientboundSetSubtitleTextPacket() {
+		return getNetMinecraftClass("network.protocol.game.ClientboundSetSubtitleTextPacket");
+	}
+
+	public Class<?> getChatMessageType() {
+		return getNetMinecraftClass("network.chat.ChatMessageType");
+	}
+
+	public Class<?> getCraftItemStack() {
+		return getCraftBukkitClass("inventory.CraftItemStack");
 	}
 }
