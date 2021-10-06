@@ -12,6 +12,14 @@ public class Reflection {
 		this.version = version;
 	}
 
+	public Class<?> getClass(final String className) throws ClassNotFoundException {
+		final Class<?> craftBukkitClass = Class.forName(className);
+			
+		this.classes.put(key, craftBukkitClass);
+
+		return craftBukkitClass;
+	}
+	
 	public Object getField(final Object object, final String fieldName)
 			throws NoSuchFieldException, IllegalAccessException {
 		if (object == null) {
@@ -29,19 +37,23 @@ public class Reflection {
 		return fieldValue;
 	}
 
+	public Class<?> getNewNMSClass117(String key) {
+		try {
+			return getClass("net.minecraft.server." + key);
+		} catch (final ClassNotFoundException e) {
+			/* Ignored */
+		}
+	}
+	
 	public Class<?> getNMSClass(String key) {
 		if (this.classes.containsKey(key)) {
 			return this.classes.get(key);
 		}
 
 		try {
-			final Class<?> nmsClass = Class.forName("net.minecraft.server." + this.version + "." + key);
-
-			this.classes.put(key, nmsClass);
-
-			return nmsClass;
+			return getClass("net.minecraft.server." + this.version + "." + key);
 		} catch (final ClassNotFoundException e) {
-			/* Ignored */
+			return getNewNMSClass(key);
 		}
 
 		return null;
@@ -53,11 +65,7 @@ public class Reflection {
 		}
 
 		try {
-			final Class<?> craftBukkitClass = Class.forName("org.bukkit.craftbukkit." + this.version + "." + key);
-			
-			this.classes.put(key, craftBukkitClass);
-
-			return craftBukkitClass;
+			getClass("org.bukkit.craftbukkit." + this.version + "." + key);
 		} catch (final ClassNotFoundException e) {
 			/* Ignored */
 		}
