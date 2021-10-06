@@ -35,12 +35,13 @@ public class Reflection {
 		}
 
 		try {
-			Class<?> nmsClass = Class.forName("net.minecraft.server." + this.version + "." + key);
+			final Class<?> nmsClass = Class.forName("net.minecraft.server." + this.version + "." + key);
 
 			this.classes.put(key, nmsClass);
 
 			return nmsClass;
 		} catch (final ClassNotFoundException e) {
+			/* Ignored */
 		}
 
 		return null;
@@ -52,12 +53,13 @@ public class Reflection {
 		}
 
 		try {
-			Class<?> craftBukkitClass = Class.forName("org.bukkit.craftbukkit." + this.version + "." + key);
+			final Class<?> craftBukkitClass = Class.forName("org.bukkit.craftbukkit." + this.version + "." + key);
+			
 			this.classes.put(key, craftBukkitClass);
 
 			return craftBukkitClass;
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
+		} catch (final ClassNotFoundException e) {
+			/* Ignored */
 		}
 
 		return null;
