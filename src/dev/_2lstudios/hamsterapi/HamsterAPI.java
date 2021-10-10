@@ -87,8 +87,6 @@ public class HamsterAPI extends JavaPlugin {
 	public void onDisable() {
 		final Server server = getServer();
 
-		server.getScheduler().cancelTasks(this);
-
 		for (final Player player : server.getOnlinePlayers()) {
 			final HamsterPlayer hamsterPlayer = this.hamsterPlayerManager.get(player);
 
