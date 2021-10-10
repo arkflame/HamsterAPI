@@ -48,7 +48,7 @@ public class BufferIO {
 						.newInstance(Unpooled.wrappedBuffer(abyte));
 
 				try {
-					final Method packetDataSerializerBytes = packetDataSerializerClass.getDeclaredMethod("e");
+					final Method packetDataSerializerBytes = packetDataSerializerClass.getMethod("e");
 					final int bytes = (int) packetDataSerializerBytes.invoke(packetDataSerializer);
 
 					if (bytebuf.readableBytes() >= bytes) {
@@ -57,7 +57,7 @@ public class BufferIO {
 
 					bytebuf.resetReaderIndex();
 				} finally {
-					packetDataSerializerClass.getDeclaredMethod("release").invoke(packetDataSerializer);
+					packetDataSerializerClass.getMethod("release").invoke(packetDataSerializer);
 				}
 
 				throw new DecoderException("Too much unreadeable bytes");
@@ -72,11 +72,11 @@ public class BufferIO {
 		if (byteBuf.readableBytes() != 0 && compressionThreshold > -1) {
 			final Object packetData = packetDataSerializerClass.getConstructor(ByteBuf.class).newInstance(byteBuf);
 			final Class<?> packetDataClass = packetData.getClass();
-			final int bytes = (int) packetDataClass.getDeclaredMethod("e").invoke(packetData); // packetData.e()
+			final int bytes = (int) packetDataClass.getMethod("e").invoke(packetData); // packetData.e()
 
 			if (bytes == 0) {
-				return (ByteBuf) packetDataClass.getDeclaredMethod("readBytes", int.class).invoke(packetData,
-						(int) packetDataClass.getDeclaredMethod("readableBytes").invoke(packetData));
+				return (ByteBuf) packetDataClass.getMethod("readBytes", int.class).invoke(packetData,
+						(int) packetDataClass.getMethod("readableBytes").invoke(packetData));
 			}
 
 			if (bytes < compressionThreshold) {
@@ -87,9 +87,9 @@ public class BufferIO {
 						+ " is larger than protocol maximum of " + 2097152);
 			}
 
-			final byte[] abyte = new byte[(int) packetDataClass.getDeclaredMethod("readableBytes").invoke(packetData)];
+			final byte[] abyte = new byte[(int) packetDataClass.getMethod("readableBytes").invoke(packetData)];
 
-			packetDataClass.getDeclaredMethod("readBytes", byte[].class).invoke(packetData, abyte);
+			packetDataClass.getMethod("readBytes", byte[].class).invoke(packetData, abyte);
 			inflater.setInput(abyte);
 
 			final byte[] bbyte = new byte[bytes];
@@ -124,14 +124,14 @@ public class BufferIO {
 			final int id;
 
 			if (bukkitVersion > 1122) {
-				id = (int) packetDataClass.getDeclaredMethod("g").invoke(packetDataSerializer);
+				id = (int) packetDataClass.getMethod("g").invoke(packetDataSerializer);
 			} else {
-				id = (int) packetDataClass.getDeclaredMethod("e").invoke(packetDataSerializer);
+				id = (int) packetDataClass.getMethod("e").invoke(packetDataSerializer);
 			}
 
 			final AttributeKey<?> attributeKey = (AttributeKey<?>) networkManagerClass.getDeclaredField("c").get(null);
 			final Object attribute = channel.attr(attributeKey).get();
-			final Object packet = enumProtocolClass.getDeclaredMethod("a", enumProtocolDirectionClass, int.class)
+			final Object packet = enumProtocolClass.getMethod("a", enumProtocolDirectionClass, int.class)
 					.invoke(enumProtocolClass.cast(attribute),
 							enumProtocolDirectionClass.getField("SERVERBOUND").get(null), id);
 
@@ -141,7 +141,7 @@ public class BufferIO {
 
 			final Class<?> packetClass = packet.getClass();
 
-			packetClass.getDeclaredMethod("a", packetDataSerializerClass).invoke(packet, packetDataSerializer);
+			packetClass.getMethod("a", packetDataSerializerClass).invoke(packet, packetDataSerializer);
 
 			return new PacketWrapper(packet);
 		} else {

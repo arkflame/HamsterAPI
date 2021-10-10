@@ -208,15 +208,15 @@ public class HamsterPlayer {
 			throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, NoSuchFieldException {
 		if (!setup) {
 			final Reflection reflection = hamsterAPI.getReflection();
-			final Object handler = player.getClass().getDeclaredMethod("getHandle").invoke(player);
+			final Object handle = Player.class.getMethod("getHandle").invoke(player);
 
-			this.playerConnection = reflection.getField(handler, reflection.getPlayerConnection());
+			this.playerConnection = reflection.getField(handle, reflection.getPlayerConnection());
 			this.networkManager = reflection.getField(playerConnection, reflection.getNetworkManager());
 			this.channel = (Channel) reflection.getField(networkManager, Channel.class);
 			this.iChatBaseComponentClass = reflection.getIChatBaseComponent();
-			this.sendPacketMethod = this.playerConnection.getClass().getDeclaredMethod("sendPacket",
+			this.sendPacketMethod = this.playerConnection.getClass().getMethod("sendPacket",
 					reflection.getPacket());
-			this.toChatBaseComponent = iChatBaseComponentClass.getDeclaredClasses()[0].getDeclaredMethod("a",
+			this.toChatBaseComponent = iChatBaseComponentClass.getDeclaredClasses()[0].getMethod("a",
 					String.class);
 			this.setup = true;
 		}

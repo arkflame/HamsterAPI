@@ -58,7 +58,7 @@ public class PacketWrapper {
 				}
 
 				if (itemStackClass.isInstance(value)) {
-					final Method asBukkitCopy = craftItemStackClass.getDeclaredMethod("asBukkitCopy", nmsItemStackClass);
+					final Method asBukkitCopy = craftItemStackClass.getMethod("asBukkitCopy", nmsItemStackClass);
 					final ItemStack itemStack = (ItemStack) asBukkitCopy.invoke(null, value);
 
 					this.items.put(fieldName, itemStack);
@@ -107,7 +107,7 @@ public class PacketWrapper {
 	public void write(final String key, final ItemStack itemStack) {
 		try {
 			final Field field = this.packet.getClass().getDeclaredField(key);
-			final Method asNmsCopy = craftItemStackClass.getDeclaredMethod("asNMSCopy", ItemStack.class);
+			final Method asNmsCopy = craftItemStackClass.getMethod("asNMSCopy", ItemStack.class);
 			final Object nmsItemStack = asNmsCopy.invoke(null, itemStack);
 
 			field.setAccessible(true);
