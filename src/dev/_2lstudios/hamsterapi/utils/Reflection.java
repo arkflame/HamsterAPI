@@ -7,6 +7,7 @@ import java.util.Map;
 public class Reflection {
 	private final String version;
 	private final Map<String, Class<?>> classes = new HashMap<>();
+	private final Map<Class<?>, Map<Class<?>, Map<Integer, Field>>> classFields = new HashMap<>();
 
 	public Reflection(final String version) {
 		this.version = version;
@@ -24,26 +25,51 @@ public class Reflection {
 		return craftBukkitClass;
 	}
 
-	public Object getField(final Object object, final Class<?> fieldType) throws IllegalAccessException {
+	private Object getValue(final Field field, final Object object) throws IllegalArgumentException, IllegalAccessException {
+		final boolean accessible = field.isAccessible();
+
+		field.setAccessible(true);
+
+		final Object value = field.get(object);
+
+		field.setAccessible(accessible);
+
+		return value;
+	}
+
+	public Object getField(final Object object, final Class<?> fieldType, final int number) throws IllegalAccessException {
 		if (object == null) {
 			throw new IllegalAccessException("Tried to access field from a null object");
 		}
 
-		for (final Field field : object.getClass().getFields()) {
-			if (field.getType().equals(fieldType)) {
-				final boolean accessible = field.isAccessible();
+		final Class<?> objectClass = object.getClass();
+		final Map<Class<?>, Map<Integer, Field>> typeFields = classFields.getOrDefault(objectClass, new HashMap<>());
+		final Map<Integer, Field> fields = typeFields.getOrDefault(fieldType, new HashMap<>());
 
-				field.setAccessible(true);
+		classFields.put(objectClass, typeFields);
+		typeFields.put(fieldType, fields);
 
-				final Object value = field.get(object);
+		if (!fields.isEmpty() && fields.containsKey(number)) {
+			return getValue(fields.get(number), object);
+		}
 
-				field.setAccessible(accessible);
+		int index = 0;
+
+		for (final Field field : objectClass.getFields()) {
+			if (fieldType.equals(field.getType()) && index++ >= number) {
+				final Object value = getValue(field, object);
+
+				fields.put(number, field);
 
 				return value;
 			}
 		}
 
 		return null;
+	}
+
+	public Object getField(final Object object, final Class<?> fieldType) throws IllegalAccessException {
+		return getField(object, fieldType, 0);
 	}
 
 	private Class<?> getNewNetMinecraftClass(String key) {
