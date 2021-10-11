@@ -12,8 +12,11 @@
     <sourceDirectory>src</sourceDirectory>
     <resources>
       <resource>
-        <targetPath>.</targetPath>
+        <filtering>true</filtering>
         <directory>${basedir}/src/resources/</directory>
+        <excludes>
+          <exclude>**/*.java</exclude>
+        </excludes>
       </resource>
     </resources>
     <plugins>
