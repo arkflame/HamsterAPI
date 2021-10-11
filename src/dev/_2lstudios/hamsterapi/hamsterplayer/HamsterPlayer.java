@@ -208,7 +208,7 @@ public class HamsterPlayer {
 			throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, NoSuchFieldException {
 		if (!setup) {
 			final Reflection reflection = hamsterAPI.getReflection();
-			final Object handle = Player.class.getMethod("getHandle").invoke(player);
+			final Object handle = player.getClass().getMethod("getHandle").invoke(player);
 
 			this.playerConnection = reflection.getField(handle, reflection.getPlayerConnection());
 			this.networkManager = reflection.getField(playerConnection, reflection.getNetworkManager());
