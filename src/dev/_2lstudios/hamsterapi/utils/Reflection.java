@@ -56,7 +56,7 @@ public class Reflection {
 		int index = 0;
 
 		for (final Field field : objectClass.getFields()) {
-			if (fieldType.equals(field.getType()) && index++ >= number) {
+			if (fieldType == field.getType() && index++ >= number) {
 				final Object value = getValue(field, object);
 
 				fields.put(number, field);
