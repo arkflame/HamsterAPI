@@ -40,7 +40,8 @@ public class HamsterPlayer {
 		return this.player;
 	}
 
-	public void sendActionbarPacketOld(final String text) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, InstantiationException, NoSuchMethodException, SecurityException {
+	public void sendActionbarPacketOld(final String text) throws IllegalAccessException, IllegalArgumentException,
+			InvocationTargetException, InstantiationException, NoSuchMethodException, SecurityException {
 		final Reflection reflection = hamsterAPI.getReflection();
 		final Object chatAction = toChatBaseComponent.invoke(null, "{ \"text\":\"" + text + "\" }");
 		final Object packet = reflection.getPacketPlayOutChat().getConstructor(iChatBaseComponentClass, byte.class)
@@ -49,13 +50,15 @@ public class HamsterPlayer {
 		sendPacket(packet);
 	}
 
-	public void sendActionbarPacketNew(final String text) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, InstantiationException, NoSuchMethodException, SecurityException {
+	public void sendActionbarPacketNew(final String text) throws IllegalAccessException, IllegalArgumentException,
+			InvocationTargetException, InstantiationException, NoSuchMethodException, SecurityException {
 		final Reflection reflection = hamsterAPI.getReflection();
 		final Object chatAction = toChatBaseComponent.invoke(null, "{ \"text\":\"" + text + "\" }");
 		final Class<?> chatMessageTypeClass = reflection.getChatMessageType();
 		final Object[] enumConstants = chatMessageTypeClass.getEnumConstants();
 		final Object packet = reflection.getPacketPlayOutChat()
-				.getConstructor(iChatBaseComponentClass, chatMessageTypeClass, UUID.class).newInstance(chatAction, enumConstants[2], player.getUniqueId());
+				.getConstructor(iChatBaseComponentClass, chatMessageTypeClass, UUID.class)
+				.newInstance(chatAction, enumConstants[2], player.getUniqueId());
 
 		sendPacket(packet);
 	}
@@ -73,9 +76,9 @@ public class HamsterPlayer {
 		}
 	}
 
-	public void sendTitlePacketOld(final String title, final String subtitle, final int fadeInTime, final int showTime, final int fadeOutTime)
-			throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException,
-			SecurityException, InstantiationException, NoSuchFieldException {
+	public void sendTitlePacketOld(final String title, final String subtitle, final int fadeInTime, final int showTime,
+			final int fadeOutTime) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException,
+			NoSuchMethodException, SecurityException, InstantiationException, NoSuchFieldException {
 		final Reflection reflection = hamsterAPI.getReflection();
 
 		final Object chatTitle = toChatBaseComponent.invoke(null, "{ \"text\":\"" + title + "\" }");
@@ -83,8 +86,8 @@ public class HamsterPlayer {
 		final Class<?> enumTitleActionClass = reflection.getPacketPlayOutTitle().getDeclaredClasses()[0];
 		final Constructor<?> titleConstructor = reflection.getPacketPlayOutTitle().getConstructor(enumTitleActionClass,
 				iChatBaseComponentClass, int.class, int.class, int.class);
-		final Object titlePacket = titleConstructor.newInstance(enumTitleActionClass.getDeclaredField("TITLE").get(null),
-				chatTitle, fadeInTime, showTime, fadeOutTime);
+		final Object titlePacket = titleConstructor.newInstance(
+				enumTitleActionClass.getDeclaredField("TITLE").get(null), chatTitle, fadeInTime, showTime, fadeOutTime);
 		final Object subtitlePacket = titleConstructor.newInstance(
 				enumTitleActionClass.getDeclaredField("SUBTITLE").get(null), chatSubTitle, fadeInTime, showTime,
 				fadeOutTime);
@@ -93,9 +96,9 @@ public class HamsterPlayer {
 		sendPacket(subtitlePacket);
 	}
 
-	public void sendTitlePacketNew(final String title, final String subtitle, final int fadeInTime, final int showTime, final int fadeOutTime)
-			throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException,
-			SecurityException, InstantiationException, NoSuchFieldException {
+	public void sendTitlePacketNew(final String title, final String subtitle, final int fadeInTime, final int showTime,
+			final int fadeOutTime) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException,
+			NoSuchMethodException, SecurityException, InstantiationException, NoSuchFieldException {
 		final Reflection reflection = hamsterAPI.getReflection();
 
 		final Constructor<?> timingTitleConstructor = reflection.getClientboundSetTitlesAnimationPacket()
@@ -118,7 +121,8 @@ public class HamsterPlayer {
 	}
 
 	// Sends a Title to the HamsterPlayer
-	public void sendTitle(final String title, final String subtitle, final int fadeInTime, final int showTime, final int fadeOutTime) {
+	public void sendTitle(final String title, final String subtitle, final int fadeInTime, final int showTime,
+			final int fadeOutTime) {
 		try {
 			sendTitlePacketNew(title, subtitle, fadeInTime, showTime, fadeOutTime);
 		} catch (final Exception e1) {
@@ -140,8 +144,6 @@ public class HamsterPlayer {
 		if (channel != null && channel.isActive()) {
 			channel.close();
 		}
-
-		disconnect("");
 	}
 
 	// Disconnect the HamsterPlayer with packets
@@ -161,11 +163,7 @@ public class HamsterPlayer {
 
 		hamsterAPI.getBungeeMessenger().sendPluginMessage("kickPlayer", player.getName(), reason);
 
-		if (server.isPrimaryThread()) {
-			player.kickPlayer(reason);
-		} else {
-			server.getScheduler().runTask(hamsterAPI, () -> player.kickPlayer(reason));
-		}
+		closeChannel();
 	}
 
 	public void sendPacket(final Object packet) {
@@ -214,10 +212,8 @@ public class HamsterPlayer {
 			this.networkManager = reflection.getField(playerConnection, reflection.getNetworkManager());
 			this.channel = (Channel) reflection.getField(networkManager, Channel.class);
 			this.iChatBaseComponentClass = reflection.getIChatBaseComponent();
-			this.sendPacketMethod = this.playerConnection.getClass().getMethod("sendPacket",
-					reflection.getPacket());
-			this.toChatBaseComponent = iChatBaseComponentClass.getDeclaredClasses()[0].getMethod("a",
-					String.class);
+			this.sendPacketMethod = this.playerConnection.getClass().getMethod("sendPacket", reflection.getPacket());
+			this.toChatBaseComponent = iChatBaseComponentClass.getDeclaredClasses()[0].getMethod("a", String.class);
 			this.setup = true;
 		}
 	}
