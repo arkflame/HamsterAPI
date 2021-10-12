@@ -152,7 +152,7 @@ public class HamsterPlayer {
 		final Server server = hamsterAPI.getServer();
 
 		try {
-			final Object chatKick = toChatBaseComponent.invoke(null, "{ \"text\":\"" + reason + "\" }");
+			final Object chatKick = toChatBaseComponent.invoke(null, "{\"text\":\"" + reason + "\"}");
 			final Object packet = reflection.getPacketPlayOutKickDisconnect().getConstructor(iChatBaseComponentClass)
 					.newInstance(chatKick);
 
