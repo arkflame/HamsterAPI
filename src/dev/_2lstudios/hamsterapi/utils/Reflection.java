@@ -13,19 +13,26 @@ public class Reflection {
 		this.version = version;
 	}
 
-	public Class<?> getClass(final String className) throws ClassNotFoundException {
+	public Class<?> getClass(final String className) {
 		if (this.classes.containsKey(className)) {
 			return this.classes.get(className);
 		}
 
-		final Class<?> craftBukkitClass = Class.forName(className);
+		Class<?> obtainedClass = null;
 
-		this.classes.put(className, craftBukkitClass);
+		try {
+			obtainedClass = Class.forName(className);
+		} catch (final ClassNotFoundException e) {
+			// Executed when class is not found
+		} finally {
+			this.classes.put(className, obtainedClass);
+		}
 
-		return craftBukkitClass;
+		return obtainedClass;
 	}
 
-	private Object getValue(final Field field, final Object object) throws IllegalArgumentException, IllegalAccessException {
+	private Object getValue(final Field field, final Object object)
+			throws IllegalArgumentException, IllegalAccessException {
 		final boolean accessible = field.isAccessible();
 
 		field.setAccessible(true);
@@ -37,7 +44,8 @@ public class Reflection {
 		return value;
 	}
 
-	public Object getField(final Object object, final Class<?> fieldType, final int number) throws IllegalAccessException {
+	public Object getField(final Object object, final Class<?> fieldType, final int number)
+			throws IllegalAccessException {
 		if (object == null) {
 			throw new IllegalAccessException("Tried to access field from a null object");
 		}
@@ -72,114 +80,86 @@ public class Reflection {
 		return getField(object, fieldType, 0);
 	}
 
-	private Class<?> getNewNetMinecraftClass(String key) {
-		try {
-			return getClass("net.minecraft." + key);
-		} catch (final ClassNotFoundException e) {
-			/* Ignored */
-		}
+	private Class<?> getMinecraftClass(String key) {
+		final int lastDot = key.lastIndexOf(".");
+		final String lastKey = key.substring(lastDot > 0 ? lastDot + 1 : 0, key.length());
+		final Class<?> legacyClass = getClass("net.minecraft.server." + this.version + "." + lastKey);
+		final Class<?> newClass = getClass("net.minecraft." + key);
 
-		return null;
-	}
-
-	private Class<?> getNetMinecraftClass(String key) {
-		try {
-			final int lastDot = key.lastIndexOf(".");
-			final String lastKey = key.substring(lastDot > 0 ? lastDot + 1 : 0, key.length());
-
-			return getClass("net.minecraft.server." + this.version + "." + lastKey);
-		} catch (final ClassNotFoundException e) {
-			/* Ignored */
-		}
-
-		return getNewNetMinecraftClass(key);
-	}
-
-	private Class<?> getNewCraftBukkitClass(String key) {
-		try {
-			return getClass("org.bukkit.craftbukkit." + this.version + "." + key);
-		} catch (final ClassNotFoundException e) {
-			/* Ignored */
-		}
-
-		return null;
+		return legacyClass != null ? legacyClass : newClass;
 	}
 
 	private Class<?> getCraftBukkitClass(String key) {
-		try {
-			final int lastDot = key.lastIndexOf(".");
-			final String lastKey = key.substring(lastDot > 0 ? lastDot + 1 : 0, key.length());
+		final int lastDot = key.lastIndexOf(".");
+		final String lastKey = key.substring(lastDot > 0 ? lastDot + 1 : 0, key.length());
+		final Class<?> legacyClass = getClass("org.bukkit.craftbukkit." + this.version + "." + lastKey);
+		final Class<?> newClass = getClass("org.bukkit.craftbukkit." + this.version + "." + key);
 
-			return getClass("org.bukkit.craftbukkit." + this.version + "." + lastKey);
-		} catch (final ClassNotFoundException e) {
-			/* Ignored */
-		}
-
-		return getNewCraftBukkitClass(key);
+		return legacyClass != null ? legacyClass : newClass;
 	}
 
 	public Class<?> getItemStack() {
-		return getNetMinecraftClass("world.item.ItemStack");
+		return getMinecraftClass("world.item.ItemStack");
 	}
 
 	public Class<?> getMinecraftKey() {
-		return getNetMinecraftClass("resources.MinecraftKey");
+		return getMinecraftClass("resources.MinecraftKey");
 	}
 
 	public Class<?> getEnumProtocol() {
-		return getNetMinecraftClass("network.EnumProtocol");
+		return getMinecraftClass("network.EnumProtocol");
 	}
 
 	public Class<?> getEnumProtocolDirection() {
-		return getNetMinecraftClass("network.protocol.EnumProtocolDirection");
+		return getMinecraftClass("network.protocol.EnumProtocolDirection");
 	}
 
 	public Class<?> getNetworkManager() {
-		return getNetMinecraftClass("network.NetworkManager");
+		return getMinecraftClass("network.NetworkManager");
 	}
 
 	public Class<?> getPacketDataSerializer() {
-		return getNetMinecraftClass("network.PacketDataSerializer");
+		return getMinecraftClass("network.PacketDataSerializer");
 	}
 
 	public Class<?> getPacket() {
-		return getNetMinecraftClass("network.protocol.Packet");
+		return getMinecraftClass("network.protocol.Packet");
 	}
 
 	public Class<?> getIChatBaseComponent() {
-		return getNetMinecraftClass("network.chat.IChatBaseComponent");
+		return getMinecraftClass("network.chat.IChatBaseComponent");
 	}
 
 	public Class<?> getPacketPlayOutKickDisconnect() {
-		return getNetMinecraftClass("network.protocol.game.PacketPlayOutKickDisconnect");
+		return getMinecraftClass("network.protocol.game.PacketPlayOutKickDisconnect");
 	}
 
 	public Class<?> getPacketPlayOutTitle() {
-		return getNetMinecraftClass("network.protocol.game.PacketPlayOutTitle");
+		return getMinecraftClass("network.protocol.game.PacketPlayOutTitle");
 	}
 
 	public Class<?> getPacketPlayOutChat() {
-		return getNetMinecraftClass("network.protocol.game.PacketPlayOutChat");
+		return getMinecraftClass("network.protocol.game.PacketPlayOutChat");
 	}
 
 	public Class<?> getPlayerConnection() {
-		return getNetMinecraftClass("server.network.PlayerConnection");
+		return getMinecraftClass("server.network.PlayerConnection");
 	}
 
 	public Class<?> getClientboundSetTitlesAnimationPacket() {
-		return getNetMinecraftClass("network.protocol.game.ClientboundSetTitlesAnimationPacket");
+		return getMinecraftClass("network.protocol.game.ClientboundSetTitlesAnimationPacket");
 	}
 
 	public Class<?> getClientboundSetTitleTextPacket() {
-		return getNetMinecraftClass("network.protocol.game.ClientboundSetTitleTextPacket");
+		return getMinecraftClass("network.protocol.game.ClientboundSetTitleTextPacket");
 	}
 
 	public Class<?> getClientboundSetSubtitleTextPacket() {
-		return getNetMinecraftClass("network.protocol.game.ClientboundSetSubtitleTextPacket");
+		return getMinecraftClass("network.protocol.game.ClientboundSetSubtitleTextPacket");
 	}
 
 	public Class<?> getChatMessageType() {
-		return getNetMinecraftClass("network.chat.ChatMessageType");
+		return getMinecraftClass("network.chat.ChatMessageType");
 	}
 
 	public Class<?> getCraftItemStack() {
