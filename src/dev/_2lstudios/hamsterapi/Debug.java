@@ -10,6 +10,10 @@ public class Debug {
         sender = plugin.getServer().getConsoleSender();
     }
 
+    public static boolean isEnabled() {
+        return sender != null;
+    }
+
     public static void log(String prefix, String message) {
         if (sender != null) {
             sender.sendMessage(

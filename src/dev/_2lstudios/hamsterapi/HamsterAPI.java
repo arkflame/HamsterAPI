@@ -33,7 +33,7 @@ public class HamsterAPI extends JavaPlugin {
 		return instance;
 	}
 
-	private static String getVersion(Server server) {
+	public static String getVersion(Server server) {
 		final String packageName = server.getClass().getPackage().getName();
 		return packageName.substring(packageName.lastIndexOf('.') + 1);
 	}
@@ -72,7 +72,7 @@ public class HamsterAPI extends JavaPlugin {
 		if (this.getConfig().getBoolean("debug")) {
 			Debug.init(this);
 
-			Debug.info("Debug mode is enabled in HamsterAPI.");
+			Debug.info("Debug mode is enabled in HamsterAPI (" + Version.getCurrentVersion().toString() + ")");
 			Debug.warn("It is recommended not to use this mode in production.");
 			Debug.crit("Debug mode can affect server performance while it is active.");
 		}
