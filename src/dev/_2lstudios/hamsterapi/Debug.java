@@ -1,22 +1,35 @@
 package dev._2lstudios.hamsterapi;
 
-import java.util.logging.Logger;
-
 import org.bukkit.ChatColor;
+import org.bukkit.command.ConsoleCommandSender;
 
 public class Debug {
-    private static Logger logger;
-    private static String prefix;
+    private static ConsoleCommandSender sender;
     
-    public static void init(Logger logger) {
-        Debug.logger = logger;
-
-        prefix = ChatColor.translateAlternateColorCodes('&', "&5[&dDebug&5] &r");
+    public static void init(HamsterAPI plugin) {
+        sender = plugin.getServer().getConsoleSender();
     }
 
-    public static void log(String message) {
-        if (logger != null) {
-            logger.info(Debug.prefix + message);
+    public static void log(String prefix, String message) {
+        if (sender != null) {
+            sender.sendMessage(
+                ChatColor.translateAlternateColorCodes(
+                    '&', 
+                    "&5[&dHamsterAPI&5] " + prefix + message
+                )
+            );
         }
+    }
+
+    public static void info(String message) {
+        log("&9INFO &7", message);
+    }
+
+    public static void crit(String message) {
+        log("&4CRIT &c", message);
+    }
+
+    public static void warn(String message) {
+        log("&6WARN &e", message);
     }
 }
