@@ -33,15 +33,15 @@ public class Reflection {
 
 	private Object getValue(final Field field, final Object object)
 			throws IllegalArgumentException, IllegalAccessException {
-		final boolean accessible = field.isAccessible();
-
+		if (field.isAccessible()) {
+			return field.get(object);
+		}
 		field.setAccessible(true);
-
-		final Object value = field.get(object);
-
-		field.setAccessible(accessible);
-
-		return value;
+		try {
+			return field.get(object);
+		} finally {
+			field.setAccessible(false);
+		}
 	}
 
 	public Object getField(final Object object, final Class<?> fieldType, final int number)
