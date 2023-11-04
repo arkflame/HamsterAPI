@@ -10,7 +10,7 @@ public class BukkitUtils {
 		final Collection<? extends Player> players = Bukkit.getServer().getOnlinePlayers();
 
 		if (!players.isEmpty()) {
-			final int i = (int) ((players.size()) * Math.random());
+			final int i = (int) (players.size() * Math.random());
 
 			return players.toArray(new Player[0])[i];
 		}
