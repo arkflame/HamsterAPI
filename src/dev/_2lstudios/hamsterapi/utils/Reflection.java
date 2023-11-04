@@ -14,21 +14,13 @@ public class Reflection {
 	}
 
 	public Class<?> getClass(final String className) {
-		if (this.classes.containsKey(className)) {
-			return this.classes.get(className);
-		}
-
-		Class<?> obtainedClass = null;
-
-		try {
-			obtainedClass = Class.forName(className);
-		} catch (final ClassNotFoundException e) {
-			// Executed when class is not found
-		} finally {
-			this.classes.put(className, obtainedClass);
-		}
-
-		return obtainedClass;
+		return this.classes.computeIfAbsent(className, key -> {
+			try {
+				return Class.forName(key);
+			} catch (final ClassNotFoundException e) {
+				return null;
+			}
+		});
 	}
 
 	private Object getValue(final Field field, final Object object)
