@@ -22,6 +22,6 @@ public class HamsterPlayerManager {
     }
 
     public HamsterPlayer get(final Player player) {
-        return hamsterPlayers.getOrDefault(player.getUniqueId(), null);
+        return hamsterPlayers.get(player.getUniqueId());
     }
 }
