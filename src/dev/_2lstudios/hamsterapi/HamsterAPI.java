@@ -39,17 +39,19 @@ public class HamsterAPI extends JavaPlugin {
 	}
 
 	private void initialize() {
-		final Server server = getServer();
-		final Properties properties = getProperties();
-		final String bukkitVersion = getVersion(server).replaceAll("[^0-9]", "");
-		final int compressionThreshold = (int) properties.getOrDefault("network_compression_threshold", 256);
-
-		setInstance(this);
-
-		this.reflection = new Reflection(server.getClass().getPackage().getName().split("\\.")[3]);
-		this.bufferIO = new BufferIO(this.reflection, bukkitVersion, compressionThreshold);
-		this.hamsterPlayerManager = new HamsterPlayerManager();
-		this.bungeeMessenger = new BungeeMessenger(this);
+	        final Properties properties = getProperties();
+	        final int compressionThreshold = (int) properties.getOrDefault("network_compression_threshold", 256);
+	
+	        setInstance(this);
+	
+	        String version = Bukkit.getMinecraftVersion().replace('.', '_');
+	        char lastChar = version.charAt(version.length() - 1);
+	        version = version.substring(0, version.length() - 1) + "R" + lastChar;
+	
+	        this.reflection = new Reflection(version);
+	        this.bufferIO = new BufferIO(this.reflection, Bukkit.getMinecraftVersion().replace(".", ""), compressionThreshold);
+	        this.hamsterPlayerManager = new HamsterPlayerManager();
+	        this.bungeeMessenger = new BungeeMessenger(this);
 	}
 
 	private Properties getProperties() {
