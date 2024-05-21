@@ -83,7 +83,9 @@ public class Reflection {
 	private Class<?> getMinecraftClass(String key) {
 		final int lastDot = key.lastIndexOf(".");
 		final String lastKey = key.substring(lastDot > 0 ? lastDot + 1 : 0, key.length());
+		// 1.8
 		final Class<?> legacyClass = getClass("net.minecraft.server." + this.version + "." + lastKey);
+		// 1.17
 		final Class<?> newClass = getClass("net.minecraft." + key);
 
 		return legacyClass != null ? legacyClass : newClass;
@@ -92,10 +94,14 @@ public class Reflection {
 	private Class<?> getCraftBukkitClass(String key) {
 		final int lastDot = key.lastIndexOf(".");
 		final String lastKey = key.substring(lastDot > 0 ? lastDot + 1 : 0, key.length());
+		// 1.8
 		final Class<?> legacyClass = getClass("org.bukkit.craftbukkit." + this.version + "." + lastKey);
+		// 1.17
 		final Class<?> newClass = getClass("org.bukkit.craftbukkit." + this.version + "." + key);
+		// 1.20.6
+		final Class<?> newestClass = getClass("org.bukkit.craftbukkit." + key);
 
-		return legacyClass != null ? legacyClass : newClass;
+		return legacyClass != null ? legacyClass : newClass != null ? newClass : newestClass;
 	}
 
 	public Class<?> getItemStack() {

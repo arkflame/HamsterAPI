@@ -32,11 +32,13 @@ public class Version {
 
     public static Version getCurrentVersion() {
         if (currentVersion == null) {
+            String version = HamsterAPI.getVersion(Bukkit.getServer());
             currentVersion = new Version(
-                HamsterAPI.getVersion(Bukkit.getServer())
-                    .split("v")[1]
-                    .split("_R")[0]
-                    .replace("_", ".")
+                version == null ? "1.20.6" :
+                    version
+                        .split("v")[1]
+                        .split("_R")[0]
+                        .replace("_", ".")
             );
         }
         return currentVersion;

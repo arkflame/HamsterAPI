@@ -27,7 +27,7 @@ public class BufferIO {
 		this.enumProtocolClass = reflection.getEnumProtocol();
 		this.enumProtocolDirectionClass = reflection.getEnumProtocolDirection();
 		this.inflater = new Inflater();
-		this.bukkitVersion = Integer.parseInt(bukkitVersion);
+		this.bukkitVersion = bukkitVersion == null ? 1206 : Integer.parseInt(bukkitVersion);
 		this.compressionThreshold = compressionThreshold;
 	}
 

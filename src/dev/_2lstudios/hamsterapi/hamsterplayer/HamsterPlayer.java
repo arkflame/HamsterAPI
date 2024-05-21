@@ -44,25 +44,35 @@ public class HamsterPlayer {
 
 	public void sendActionbarPacketOld(final String text) throws IllegalAccessException, IllegalArgumentException,
 			InvocationTargetException, InstantiationException, NoSuchMethodException, SecurityException {
-		final Reflection reflection = hamsterAPI.getReflection();
-		final Object chatAction = toChatBaseComponent.invoke(null, "{ \"text\":\"" + text + "\" }");
-		final Object packet = reflection.getPacketPlayOutChat().getConstructor(iChatBaseComponentClass, byte.class)
-				.newInstance(chatAction, (byte) 2);
+		try {
+			final Reflection reflection = hamsterAPI.getReflection();
+			final Object chatAction = toChatBaseComponent.invoke(null, "{ \"text\":\"" + text + "\" }");
+			final Object packet = reflection.getPacketPlayOutChat().getConstructor(iChatBaseComponentClass, byte.class)
+					.newInstance(chatAction, (byte) 2);
 
-		sendPacket(packet);
+			sendPacket(packet);
+		} catch (final Exception e) {
+			hamsterAPI.getLogger().info("Failed to send action bar packet to player " + player.getName() + "!");
+			e.printStackTrace();
+		}
 	}
 
 	public void sendActionbarPacketNew(final String text) throws IllegalAccessException, IllegalArgumentException,
 			InvocationTargetException, InstantiationException, NoSuchMethodException, SecurityException {
-		final Reflection reflection = hamsterAPI.getReflection();
-		final Object chatAction = toChatBaseComponent.invoke(null, "{ \"text\":\"" + text + "\" }");
-		final Class<?> chatMessageTypeClass = reflection.getChatMessageType();
-		final Object[] enumConstants = chatMessageTypeClass.getEnumConstants();
-		final Object packet = reflection.getPacketPlayOutChat()
-				.getConstructor(iChatBaseComponentClass, chatMessageTypeClass, UUID.class)
-				.newInstance(chatAction, enumConstants[2], player.getUniqueId());
+		try {
+			final Reflection reflection = hamsterAPI.getReflection();
+			final Object chatAction = toChatBaseComponent.invoke(null, "{ \"text\":\"" + text + "\" }");
+			final Class<?> chatMessageTypeClass = reflection.getChatMessageType();
+			final Object[] enumConstants = chatMessageTypeClass.getEnumConstants();
+			final Object packet = reflection.getPacketPlayOutChat()
+					.getConstructor(iChatBaseComponentClass, chatMessageTypeClass, UUID.class)
+					.newInstance(chatAction, enumConstants[2], player.getUniqueId());
 
-		sendPacket(packet);
+			sendPacket(packet);
+		} catch (final Exception e) {
+			hamsterAPI.getLogger().info("Failed to send action bar packet to player " + player.getName() + "!");
+			e.printStackTrace();
+		}
 	}
 
 	// Sends an ActionBar to the HamsterPlayer
@@ -81,45 +91,57 @@ public class HamsterPlayer {
 	public void sendTitlePacketOld(final String title, final String subtitle, final int fadeInTime, final int showTime,
 			final int fadeOutTime) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException,
 			NoSuchMethodException, SecurityException, InstantiationException, NoSuchFieldException {
-		final Reflection reflection = hamsterAPI.getReflection();
+		try {
+			final Reflection reflection = hamsterAPI.getReflection();
 
-		final Object chatTitle = toChatBaseComponent.invoke(null, "{ \"text\":\"" + title + "\" }");
-		final Object chatSubTitle = toChatBaseComponent.invoke(null, "{ \"text\":\"" + subtitle + "\" }");
-		final Class<?> enumTitleActionClass = reflection.getPacketPlayOutTitle().getDeclaredClasses()[0];
-		final Constructor<?> titleConstructor = reflection.getPacketPlayOutTitle().getConstructor(enumTitleActionClass,
-				iChatBaseComponentClass, int.class, int.class, int.class);
-		final Object titlePacket = titleConstructor.newInstance(
-				enumTitleActionClass.getDeclaredField("TITLE").get(null), chatTitle, fadeInTime, showTime, fadeOutTime);
-		final Object subtitlePacket = titleConstructor.newInstance(
-				enumTitleActionClass.getDeclaredField("SUBTITLE").get(null), chatSubTitle, fadeInTime, showTime,
-				fadeOutTime);
+			final Object chatTitle = toChatBaseComponent.invoke(null, "{ \"text\":\"" + title + "\" }");
+			final Object chatSubTitle = toChatBaseComponent.invoke(null, "{ \"text\":\"" + subtitle + "\" }");
+			final Class<?> enumTitleActionClass = reflection.getPacketPlayOutTitle().getDeclaredClasses()[0];
+			final Constructor<?> titleConstructor = reflection.getPacketPlayOutTitle().getConstructor(
+					enumTitleActionClass,
+					iChatBaseComponentClass, int.class, int.class, int.class);
+			final Object titlePacket = titleConstructor.newInstance(
+					enumTitleActionClass.getDeclaredField("TITLE").get(null), chatTitle, fadeInTime, showTime,
+					fadeOutTime);
+			final Object subtitlePacket = titleConstructor.newInstance(
+					enumTitleActionClass.getDeclaredField("SUBTITLE").get(null), chatSubTitle, fadeInTime, showTime,
+					fadeOutTime);
 
-		sendPacket(titlePacket);
-		sendPacket(subtitlePacket);
+			sendPacket(titlePacket);
+			sendPacket(subtitlePacket);
+		} catch (final Exception e) {
+			hamsterAPI.getLogger().info("Failed to send title packet to player " + player.getName() + "!");
+			e.printStackTrace();
+		}
 	}
 
 	public void sendTitlePacketNew(final String title, final String subtitle, final int fadeInTime, final int showTime,
 			final int fadeOutTime) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException,
 			NoSuchMethodException, SecurityException, InstantiationException, NoSuchFieldException {
-		final Reflection reflection = hamsterAPI.getReflection();
+		try {
+			final Reflection reflection = hamsterAPI.getReflection();
 
-		final Constructor<?> timingTitleConstructor = reflection.getClientboundSetTitlesAnimationPacket()
-				.getConstructor(int.class, int.class, int.class);
-		final Object timingPacket = timingTitleConstructor.newInstance(fadeInTime, showTime, fadeOutTime);
+			final Constructor<?> timingTitleConstructor = reflection.getClientboundSetTitlesAnimationPacket()
+					.getConstructor(int.class, int.class, int.class);
+			final Object timingPacket = timingTitleConstructor.newInstance(fadeInTime, showTime, fadeOutTime);
 
-		final Object chatTitle = toChatBaseComponent.invoke(null, "{ \"text\":\"" + title + "\" }");
-		final Constructor<?> titleConstructor = reflection.getClientboundSetTitleTextPacket()
-				.getConstructor(iChatBaseComponentClass);
-		final Object titlePacket = titleConstructor.newInstance(chatTitle);
+			final Object chatTitle = toChatBaseComponent.invoke(null, "{ \"text\":\"" + title + "\" }");
+			final Constructor<?> titleConstructor = reflection.getClientboundSetTitleTextPacket()
+					.getConstructor(iChatBaseComponentClass);
+			final Object titlePacket = titleConstructor.newInstance(chatTitle);
 
-		final Object chatSubTitle = toChatBaseComponent.invoke(null, "{ \"text\":\"" + subtitle + "\" }");
-		final Constructor<?> subTitleConstructor = reflection.getClientboundSetSubtitleTextPacket()
-				.getConstructor(iChatBaseComponentClass);
-		final Object subTitlePacket = subTitleConstructor.newInstance(chatSubTitle);
+			final Object chatSubTitle = toChatBaseComponent.invoke(null, "{ \"text\":\"" + subtitle + "\" }");
+			final Constructor<?> subTitleConstructor = reflection.getClientboundSetSubtitleTextPacket()
+					.getConstructor(iChatBaseComponentClass);
+			final Object subTitlePacket = subTitleConstructor.newInstance(chatSubTitle);
 
-		sendPacket(timingPacket);
-		sendPacket(titlePacket);
-		sendPacket(subTitlePacket);
+			sendPacket(timingPacket);
+			sendPacket(titlePacket);
+			sendPacket(subTitlePacket);
+		} catch (final Exception e) {
+			hamsterAPI.getLogger().info("Failed to send title packet to player " + player.getName() + "!");
+			e.printStackTrace();
+		}
 	}
 
 	// Sends a Title to the HamsterPlayer
@@ -132,6 +154,7 @@ public class HamsterPlayer {
 				sendTitlePacketOld(title, subtitle, fadeInTime, showTime, fadeOutTime);
 			} catch (final Exception e2) {
 				hamsterAPI.getLogger().info("Failed to send title packet to player " + player.getName() + "!");
+				e2.printStackTrace();
 			}
 		}
 	}
@@ -222,13 +245,15 @@ public class HamsterPlayer {
 
 			this.iChatBaseComponentClass = reflection.getIChatBaseComponent();
 
-			
 			this.sendPacketMethod = this.playerConnection.getClass().getMethod(
-				Version.getCurrentVersion().isMinor("1.18") ? "sendPacket" : "a"
-			, reflection.getPacket());
+					Version.getCurrentVersion().isMinor("1.18") ? "sendPacket" : "a", reflection.getPacket());
 			Debug.info("Getting sendPacket method from playerConnection field (" + this.player.getName() + ")");
-
-			this.toChatBaseComponent = iChatBaseComponentClass.getDeclaredClasses()[0].getMethod("a", String.class);
+			try {
+				this.toChatBaseComponent = iChatBaseComponentClass.getDeclaredClasses()[0].getMethod("a", String.class);
+			} catch (NoSuchMethodException ex) {
+				// Unable to get chat component method
+				Debug.crit("Failed to get toChatBaseComponent method. Kick messagges and other won't show up.");
+			}
 			this.setup = true;
 		}
 	}
@@ -255,7 +280,8 @@ public class HamsterPlayer {
 				pipeline.addAfter("splitter", HamsterHandler.HAMSTER_DECODER, hamsterDecoderHandler);
 				Debug.info("Added HAMSTER_DECODER in pipeline after spliter (" + this.player.getName() + ")");
 			} else {
-				Debug.crit("No ChannelHandler was found on the pipeline to inject HAMSTER_DECODER (" + this.player.getName() + ")");
+				Debug.crit("No ChannelHandler was found on the pipeline to inject HAMSTER_DECODER ("
+						+ this.player.getName() + ")");
 				throw new IllegalAccessException(
 						"No ChannelHandler was found on the pipeline to inject " + HamsterHandler.HAMSTER_DECODER);
 			}
@@ -264,7 +290,8 @@ public class HamsterPlayer {
 				pipeline.addAfter("decoder", HamsterHandler.HAMSTER_CHANNEL, hamsterChannelHandler);
 				Debug.info("Added HAMSTER_CHANNEL in pipeline after decoder (" + this.player.getName() + ")");
 			} else {
-				Debug.crit("No ChannelHandler was found on the pipeline to inject HAMSTER_CHANNEL (" + this.player.getName() + ")");
+				Debug.crit("No ChannelHandler was found on the pipeline to inject HAMSTER_CHANNEL ("
+						+ this.player.getName() + ")");
 				throw new IllegalAccessException(
 						"No ChannelHandler was found on the pipeline to inject " + hamsterChannelHandler);
 			}

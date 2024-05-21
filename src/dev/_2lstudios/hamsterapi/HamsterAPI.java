@@ -34,20 +34,22 @@ public class HamsterAPI extends JavaPlugin {
 	}
 
 	public static String getVersion(Server server) {
-		final String packageName = server.getClass().getPackage().getName();
-		return packageName.substring(packageName.lastIndexOf('.') + 1);
+		String packageName = server.getClass().getPackage().getName();
+		String[] packageSplit = packageName.split("\\.");
+		String version = packageSplit.length > 3 ? packageSplit[3] : null;
+		return version;
 	}
 
 	private void initialize() {
 		final Server server = getServer();
 		final Properties properties = getProperties();
-		final String bukkitVersion = getVersion(server).replaceAll("[^0-9]", "");
+		final String bukkitVersion = getVersion(server);
 		final int compressionThreshold = (int) properties.getOrDefault("network_compression_threshold", 256);
 
 		setInstance(this);
 
-		this.reflection = new Reflection(server.getClass().getPackage().getName().split("\\.")[3]);
-		this.bufferIO = new BufferIO(this.reflection, bukkitVersion, compressionThreshold);
+		this.reflection = new Reflection(bukkitVersion);
+		this.bufferIO = new BufferIO(this.reflection, bukkitVersion == null ? null : bukkitVersion.replaceAll("[^0-9]", ""), compressionThreshold);
 		this.hamsterPlayerManager = new HamsterPlayerManager();
 		this.bungeeMessenger = new BungeeMessenger(this);
 	}
